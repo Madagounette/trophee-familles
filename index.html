@@ -1,0 +1,3812 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trophée Pernin</title>
+<meta name="description" content="Tableau de bord familial : points de la semaine, cagnotte et réunion du vendredi.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#14161C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trophée Pernin">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Karla:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+/* ============================ TOKENS ============================ */
+:root{
+  --ground:#EDEEF1; --surface:#FFFFFF; --surface-2:#F5F6F8; --surface-3:#EAECF0;
+  --ink:#151922; --ink-2:#4D5665; --ink-3:#7B8492;
+  --line:#DCDFE5; --line-2:#C4C9D2;
+  --pos:#177A52; --pos-bg:#DFF0E7; --pos-line:#8CCBB0;
+  --warn:#B85F0C; --warn-bg:#FAE7D2; --warn-line:#E5A868;
+  --dang:#AC2B23; --dang-bg:#F9DED9; --dang-line:#E39189;
+  --brass:#8A6412; --brass-bg:#F5EAD0; --brass-line:#D6B76A;
+  /* Huit couleurs au choix pour les enfants, réparties sur toute la roue
+     chromatique. Chacun choisit la sienne dans les Réglages. */
+  /* Assombries jusqu'à passer 4,5:1 en texte sur leur propre fond teinté. */
+  --col-bleu:#2547C4;   --col-cyan:#0B6B81;  --col-vert:#277130;   --col-ambre:#885B07;
+  --col-corail:#A94029; --col-rose:#B12A6C;  --col-violet:#7A3BD1; --col-ardoise:#4C5A6E;
+  --teinte:14%; --teinte-forte:20%;
+  --shadow-1:0 1px 2px rgba(16,20,28,.05), 0 6px 18px -10px rgba(16,20,28,.22);
+  --shadow-2:0 2px 6px rgba(16,20,28,.07), 0 22px 44px -20px rgba(16,20,28,.35);
+  --r-s:8px; --r-m:14px; --r-l:20px;
+  --scale:1;
+  --zoom:1;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Karla","Segoe UI",system-ui,sans-serif;
+  --mono:"DM Mono","SFMono-Regular",Consolas,monospace;
+}
+:root:not([data-theme="light"]){ }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1117; --surface:#161A21; --surface-2:#1D222B; --surface-3:#242A34;
+    --ink:#E9ECF1; --ink-2:#A5AEBB; --ink-3:#7A8492;
+    --line:#282E38; --line-2:#39414D;
+    --pos:#4CC08A; --pos-bg:#10281F; --pos-line:#255f47;
+    --warn:#F0913E; --warn-bg:#2C1E12; --warn-line:#6d4520;
+    --dang:#F2695C; --dang-bg:#2F1815; --dang-line:#71332d;
+    --brass:#E0B45F; --brass-bg:#2A2213; --brass-line:#6b5527;
+    --col-bleu:#8AA0FF; --col-cyan:#48BEDA;  --col-vert:#67C46F;   --col-ambre:#E3AE4D;
+    --col-corail:#FF9179; --col-rose:#FF85B8; --col-violet:#BE9BFF; --col-ardoise:#9BAABF;
+    --teinte:20%; --teinte-forte:28%;
+    --shadow-1:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
+    --shadow-2:0 2px 6px rgba(0,0,0,.5), 0 22px 44px -20px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1117; --surface:#161A21; --surface-2:#1D222B; --surface-3:#242A34;
+  --ink:#E9ECF1; --ink-2:#A5AEBB; --ink-3:#7A8492;
+  --line:#282E38; --line-2:#39414D;
+  --pos:#4CC08A; --pos-bg:#10281F; --pos-line:#255f47;
+  --warn:#F0913E; --warn-bg:#2C1E12; --warn-line:#6d4520;
+  --dang:#F2695C; --dang-bg:#2F1815; --dang-line:#71332d;
+  --brass:#E0B45F; --brass-bg:#2A2213; --brass-line:#6b5527;
+  --col-bleu:#8AA0FF; --col-cyan:#48BEDA;  --col-vert:#67C46F;   --col-ambre:#E3AE4D;
+  --col-corail:#FF9179; --col-rose:#FF85B8; --col-violet:#BE9BFF; --col-ardoise:#9BAABF;
+  --teinte:20%; --teinte-forte:28%;
+  --shadow-1:0 1px 2px rgba(0,0,0,.4), 0 6px 18px -10px rgba(0,0,0,.6);
+  --shadow-2:0 2px 6px rgba(0,0,0,.5), 0 22px 44px -20px rgba(0,0,0,.8);
+}
+
+/* ============================ BASE ============================ */
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--body); font-size:calc(16px * var(--scale) * var(--zoom)); line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+/* Paysage large : on est probablement sur la TV du salon, on lit de loin.
+   L'échelle grandit avec l'écran, plus besoin d'un « mode TV » à activer. */
+h1,h2,h3,h4{font-family:var(--display); margin:0; text-wrap:balance; letter-spacing:-.015em}
+button,input,select,textarea{font:inherit; color:inherit}
+button{cursor:pointer; border:none; background:none}
+:focus-visible{outline:2.5px solid var(--c1); outline-offset:2px; border-radius:4px}
+.mono{font-family:var(--mono); font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ============================ SHELL ============================ */
+.wrap{max-width:1180px; margin:0 auto; padding:0 clamp(14px,3vw,28px)}
+.topbar{
+  position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter:saturate(1.4) blur(10px); border-bottom:1px solid var(--line);
+}
+.topbar .row{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px; padding:11px 0}
+.topbar .row > .iconbtn{justify-self:end}
+.brand{display:flex; align-items:center; gap:10px; min-width:0; justify-self:start}
+.brand svg{flex:none}
+.brand b{font-family:var(--display); font-weight:800; font-size:1.12rem; letter-spacing:-.02em; white-space:nowrap}
+.brand span{font-size:.72rem; color:var(--ink-3); text-transform:uppercase; letter-spacing:.1em; display:block; margin-top:-2px}
+
+.tabs{display:flex; gap:2px; background:var(--surface-3); padding:3px; border-radius:999px; border:1px solid var(--line); justify-self:center}
+.tabs button{
+  padding:7px 15px; border-radius:999px; font-size:.86rem; font-weight:600; color:var(--ink-2);
+  transition:background .16s, color .16s;
+}
+.tabs button[aria-current="true"]{background:var(--surface); color:var(--ink); box-shadow:var(--shadow-1)}
+
+/* pastille rouge, comme une messagerie */
+.tabs button{position:relative}
+.badge{
+  display:inline-grid; place-items:center; min-width:19px; height:19px; padding:0 5px;
+  margin-left:7px; border-radius:999px; background:#D93025; color:#fff;
+  font-family:var(--mono); font-size:.68rem; font-weight:500; vertical-align:middle;
+  box-shadow:0 0 0 2px var(--surface);
+}
+:root:not([data-theme="light"]) .badge{background:#F0554A; color:#1a0e0d}
+@media (prefers-color-scheme: light){ :root:not([data-theme="dark"]) .badge{background:#D93025; color:#fff} }
+.feedrow[class*="col-"]{
+  background:color-mix(in srgb, var(--sien) var(--teinte), var(--surface));
+  box-shadow:inset 5px 0 0 var(--sien);
+}
+.feedrow.neuf .tagneuf{background:var(--brass); color:var(--surface); border-color:var(--brass)}
+.tagneuf{
+  display:inline-block; margin-left:8px; padding:1px 7px; border-radius:999px;
+  background:var(--brass-bg); color:var(--brass); border:1px solid var(--brass-line);
+  font-size:.64rem; font-weight:700; text-transform:uppercase; letter-spacing:.07em;
+}
+.par{color:var(--ink-3)}
+
+.statusbar{display:flex; justify-content:center; padding:6px 0 40px}
+.status{
+  display:flex; align-items:center; gap:8px; font-size:.76rem; color:var(--ink-3);
+  white-space:nowrap; padding:7px 14px; border-radius:999px;
+  background:var(--surface); border:1px solid var(--line);
+}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--pos);flex:none}
+.dot.saving{background:var(--warn)} .dot.off{background:var(--dang)}
+
+.iconbtn{
+  width:38px;height:38px;border-radius:11px;border:1px solid var(--line);background:var(--surface);
+  display:grid;place-items:center;color:var(--ink-2); box-shadow:var(--shadow-1);
+}
+.iconbtn:hover{color:var(--ink); border-color:var(--line-2)}
+
+.banner{
+  margin:14px 0 0; padding:11px 14px; border-radius:var(--r-m); font-size:.88rem;
+  background:var(--warn-bg); color:var(--warn); border:1px solid var(--warn-line);
+  display:flex; gap:10px; align-items:flex-start;
+}
+.banner.call{background:var(--brass-bg); color:var(--brass); border-color:var(--brass-line)}
+.banner.soft{background:var(--surface-2); color:var(--ink-2); border-color:var(--line)}
+
+/* --- le graphique de la semaine --- */
+.graphbloc{margin:14px 0 4px}
+.graphsem{display:block; width:100%; height:auto; overflow:visible}
+.gs-grid{stroke:var(--line); stroke-width:1}
+.gs-zero{stroke:var(--line-2); stroke-width:1}
+.gs-axe{font-family:var(--body); font-size:11px; fill:var(--ink-3)}
+.gs-val{font-family:var(--mono); font-size:11px; font-weight:700; fill:var(--ink-2)}
+.gs-plus{fill:var(--pos)}
+.gs-moins{fill:var(--dang)}
+.gs-ligne{fill:none; stroke:var(--ink-2); stroke-width:2; stroke-linejoin:round; stroke-linecap:round}
+.gs-pt{fill:var(--ink-2); stroke:var(--surface); stroke-width:2}
+.gs-zone{fill:transparent}
+.gs-note{font-size:.76rem; color:var(--ink-3); text-align:center; margin:2px 0 0}
+.gs-tuiles{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:12px 0 0}
+.gs-tuile{background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-m); padding:9px 11px}
+.gs-tuile .k{display:block; font-size:.68rem; color:var(--ink-3); text-transform:uppercase; letter-spacing:.07em}
+.gs-tuile b{font-family:var(--display); font-size:1.25rem; line-height:1.25}
+.gs-tuile .v-plus{color:var(--pos)}
+.gs-tuile .v-moins{color:var(--dang)}
+
+/* --- signature de pied de page --- */
+.signature{text-align:center; padding:26px 18px 34px; border-top:1px solid var(--line);
+           margin-top:10px; background:var(--surface-2)}
+.signature img{width:132px; height:auto; opacity:.94}
+.signature .amour{font-size:.85rem; color:var(--ink-3); margin:6px 0 0}
+.don-bande{display:inline-flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap;
+           background:var(--surface); border:1px solid var(--line); color:var(--ink-2);
+           border-radius:var(--r-m); padding:10px 16px; margin:16px auto 0; font-size:.87rem;
+           max-width:520px; text-align:left}
+.don-bande a{color:var(--brass); font-weight:700; text-decoration:underline; white-space:nowrap}
+.don-texte{white-space:normal}
+.dontxt p{margin:0 0 10px}
+.dontxt p:last-child{margin:0}
+.banner button{font-weight:700; text-decoration:underline; color:inherit; margin-left:auto; white-space:nowrap}
+.banner button + button{margin-left:12px; font-weight:600; opacity:.7}
+
+main{padding:18px 0 8px}
+.eyebrow{font-size:.72rem; text-transform:uppercase; letter-spacing:.13em; color:var(--ink-3); font-weight:700}
+
+/* ============================ WEEK STRIP ============================ */
+.weekstrip{
+  display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+  padding:14px 18px; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-m); box-shadow:var(--shadow-1); margin-bottom:20px;
+}
+.weekstrip h2{font-size:1.05rem; font-weight:700}
+.weekstrip .meta{font-size:.82rem; color:var(--ink-2)}
+.weekstrip .spacer{margin-left:auto}
+
+/* ============================ CARDS ============================ */
+.grid{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r-l);
+  box-shadow:var(--shadow-1); overflow:hidden; display:flex; flex-direction:column;
+}
+.card .lane{height:7px}
+/* Chaque enfant a sa couleur : bandeau saturé, prénom coloré, fond teinté,
+   et un liseré sur ses lignes dans le fil. Le lavis seul ne suffit pas à
+   distinguer trois enfants — les repères saturés font le vrai travail. */
+.col-bleu{--sien:var(--col-bleu)}     .col-cyan{--sien:var(--col-cyan)}
+.col-vert{--sien:var(--col-vert)}     .col-ambre{--sien:var(--col-ambre)}
+.col-corail{--sien:var(--col-corail)} .col-rose{--sien:var(--col-rose)}
+.col-violet{--sien:var(--col-violet)} .col-ardoise{--sien:var(--col-ardoise)}
+
+.card .lane{background:var(--sien)}
+.card[class*="col-"]{
+  background:color-mix(in srgb, var(--sien) var(--teinte), var(--surface));
+  border-color:color-mix(in srgb, var(--sien) calc(var(--teinte) * 2), var(--line));
+}
+.card .head h3{color:var(--sien)}
+.card .avatar{background:color-mix(in srgb, var(--sien) 18%, var(--surface)); color:var(--sien)}
+.card .chip{background:color-mix(in srgb, var(--sien) calc(var(--teinte) / 2), var(--surface))}
+.card .chip.brass, .card .chip.axe{background:var(--brass-bg)}
+.card .chip.bad{background:var(--dang-bg)}
+.card .head{display:flex; align-items:center; gap:12px; padding:16px 18px 0}
+.avatar{
+  width:44px;height:44px;border-radius:13px;display:grid;place-items:center;
+  font-family:var(--display); font-weight:800; font-size:1.2rem; flex:none;
+}
+.meet-child .avatar{background:color-mix(in srgb, var(--sien) 18%, var(--surface)); color:var(--sien)}
+.card .head h3{font-size:1.25rem; font-weight:700; line-height:1.1}
+.card .head .age{font-size:.78rem; color:var(--ink-3)}
+
+.scoreblock{display:flex; align-items:baseline; gap:12px; padding:10px 18px 2px}
+.score{font-family:var(--display); font-weight:800; font-size:3.4rem; line-height:1; font-variant-numeric:tabular-nums; letter-spacing:-.04em}
+.score.z-good{color:var(--pos)} .score.z-warn{color:var(--warn)} .score.z-bad{color:var(--dang)}
+.scoreunit{font-size:.85rem; color:var(--ink-3)}
+
+.verdict{
+  display:inline-flex; align-items:center; gap:7px; margin:8px 18px 0;
+  padding:6px 11px; border-radius:999px; font-size:.79rem; font-weight:700; width:fit-content;
+  border:1px solid transparent;
+}
+.v-good{background:var(--pos-bg); color:var(--pos); border-color:var(--pos-line)}
+.v-none{background:var(--surface-3); color:var(--ink-2); border-color:var(--line-2)}
+.v-warn{background:var(--warn-bg); color:var(--warn); border-color:var(--warn-line);
+  background-image:repeating-linear-gradient(-45deg, transparent 0 6px, color-mix(in srgb,var(--warn) 12%, transparent) 6px 12px)}
+.v-bad{background:var(--dang-bg); color:var(--dang); border-color:var(--dang-line);
+  background-image:repeating-linear-gradient(-45deg, transparent 0 5px, color-mix(in srgb,var(--dang) 18%, transparent) 5px 10px)}
+
+/* rail */
+.rail{margin:16px 18px 0; position:relative}
+.railbar{height:10px; border-radius:999px; overflow:hidden; display:flex; border:1px solid var(--line)}
+.railbar i{display:block; height:100%}
+.railbar .s-bad{flex:1; background:color-mix(in srgb,var(--dang) 28%, var(--surface-2))}
+.railbar .s-warn{flex:2; background:color-mix(in srgb,var(--warn) 24%, var(--surface-2))}
+.railbar .s-mid{flex:3; background:var(--surface-3)}
+.railbar .s-good{flex:4; background:color-mix(in srgb,var(--pos) 26%, var(--surface-2))}
+.marker{
+  position:absolute; top:-5px; width:4px; height:20px; border-radius:3px; background:var(--ink);
+  transform:translateX(-2px); transition:left .3s cubic-bezier(.2,.7,.3,1);
+  box-shadow:0 0 0 2.5px var(--surface);
+}
+.railticks{display:flex; justify-content:space-between; margin-top:5px; font-size:.66rem; color:var(--ink-3)}
+
+.sub{padding:14px 18px 0; display:flex; flex-direction:column; gap:9px}
+.chip{
+  display:flex; align-items:center; gap:9px; font-size:.82rem; padding:8px 11px;
+  border-radius:var(--r-s); background:var(--surface-2); border:1px solid var(--line);
+}
+.chip.brass{background:var(--brass-bg); border-color:var(--brass-line); color:var(--brass)}
+.chip.bad{background:var(--dang-bg); border-color:var(--dang-line); color:var(--dang)}
+.chip b{font-weight:700}
+.chip .r{margin-left:auto; font-family:var(--mono); font-size:.78rem}
+
+.actions{display:flex; gap:10px; padding:16px 18px 18px; margin-top:auto}
+.bigbtn{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:9px;
+  padding:15px 10px; border-radius:var(--r-m); font-weight:700; font-size:1rem;
+  border:1.5px solid; transition:transform .1s, filter .15s;
+}
+.bigbtn:active{transform:scale(.97)}
+.btn-plus{background:var(--pos-bg); color:var(--pos); border-color:var(--pos-line)}
+.btn-minus{background:var(--dang-bg); color:var(--dang); border-color:var(--dang-line)}
+.bigbtn span{font-family:var(--display); font-size:1.5rem; line-height:1; font-weight:800}
+.linkbtn{
+  width:100%; padding:11px; font-size:.83rem; font-weight:600; color:var(--ink-2);
+  border-top:1px solid color-mix(in srgb, var(--sien, var(--line)) 22%, var(--line));
+  background:color-mix(in srgb, var(--sien, transparent) calc(var(--teinte) / 2), transparent);
+}
+.linkbtn:hover{color:var(--ink); background:color-mix(in srgb, var(--sien, var(--ink)) calc(var(--teinte) * 1.6), transparent)}
+
+/* ============================ FEED ============================ */
+.section{margin-top:34px}
+.section > h2{font-size:1.35rem; font-weight:700; margin-bottom:4px}
+.section > p.lead{color:var(--ink-2); font-size:.9rem; margin:0 0 16px}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-l); box-shadow:var(--shadow-1); overflow:hidden}
+.feedrow{display:flex; gap:13px; align-items:flex-start; padding:13px 18px; border-top:1px solid var(--line)}
+.feedrow:first-child{border-top:none}
+.delta{
+  font-family:var(--display); font-weight:800; font-size:1rem; width:34px; height:34px; flex:none;
+  border-radius:10px; display:grid; place-items:center; border:1px solid;
+}
+.delta.p{background:var(--pos-bg); color:var(--pos); border-color:var(--pos-line)}
+.delta.m{background:var(--dang-bg); color:var(--dang); border-color:var(--dang-line)}
+.feedrow .body{flex:1; min-width:0}
+.feedrow .who{font-weight:700; font-size:.9rem}
+.feedrow .note{font-size:.92rem; color:var(--ink); overflow-wrap:anywhere; margin-top:1px}
+.feedrow .when{font-family:var(--mono); font-size:.72rem; color:var(--ink-3)}
+.feedrow .when b{
+  color:var(--sien); font-family:var(--display); font-weight:800;
+  font-size:.95rem; letter-spacing:-.015em;
+}
+.rowacts{display:flex; flex-direction:column; gap:5px; align-items:flex-end; align-self:center}
+.undo{font-size:.75rem; color:var(--ink-3); text-decoration:underline; white-space:nowrap}
+.undo:hover{color:var(--dang)}
+.undo.edit:hover{color:var(--c1)}
+.chip.axe{background:var(--brass-bg); border-color:var(--brass-line); color:var(--brass); align-items:flex-start}
+.nuancier{display:grid; grid-template-columns:repeat(auto-fit,minmax(126px,1fr)); gap:8px}
+.nuance{
+  display:flex; align-items:center; gap:8px; padding:9px 11px; border-radius:var(--r-s);
+  border:1.5px solid var(--line); background:var(--surface); font-size:.86rem; font-weight:600; color:var(--ink-2);
+}
+.nuance[aria-pressed="true"]{border-color:var(--sien); background:color-mix(in srgb, var(--sien) var(--teinte), var(--surface)); color:var(--ink)}
+.nuance i{font-style:normal; font-size:.76rem; color:var(--ink-3); font-weight:400}
+.pastille{
+  display:inline-block; width:15px; height:15px; border-radius:50%; flex:none;
+  background:var(--sien, var(--ink-3)); box-shadow:0 0 0 1px color-mix(in srgb, var(--sien) 45%, transparent);
+}
+.suggestion{
+  display:flex; gap:10px; align-items:flex-start; width:100%; margin-top:12px; padding:12px 14px;
+  text-align:left; border-radius:var(--r-m); border:1.5px dashed var(--brass-line);
+  background:var(--brass-bg); color:var(--brass); font-size:.9rem; line-height:1.45;
+}
+.suggestion:hover{border-style:solid; filter:brightness(1.04)}
+.suggestion i{font-style:normal; font-size:.82rem; opacity:.85}
+.chip.axe i{font-style:normal; opacity:.85}
+.empty{padding:34px 18px; text-align:center; color:var(--ink-3); font-size:.9rem}
+
+/* ============================ MEETING ============================ */
+.meet-child{border-top:1px solid var(--line); padding:22px 18px}
+.meet-child[class*="col-"]{
+  background:color-mix(in srgb, var(--sien) calc(var(--teinte) / 1.6), transparent);
+  box-shadow:inset 6px 0 0 var(--sien);
+}
+.meet-child h3{color:var(--sien)}
+.meet-child:first-of-type{border-top:none}
+.meet-head{display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.meet-head .score{font-size:2.6rem}
+.timeline{margin:16px 0 0; padding:0 0 0 20px; border-left:2px solid var(--line); display:flex; flex-direction:column; gap:12px}
+.tl{position:relative; font-size:.92rem}
+.tl::before{content:""; position:absolute; left:-26px; top:6px; width:11px; height:11px; border-radius:50%; border:2px solid var(--surface)}
+.tl.p::before{background:var(--pos)} .tl.m::before{background:var(--dang)}
+.tl .when{font-family:var(--mono); font-size:.72rem; color:var(--ink-3); margin-bottom:2px}
+.choicebox{margin-top:18px; padding:16px; border-radius:var(--r-m); background:var(--surface-2); border:1px solid var(--line)}
+.choices{display:flex; gap:12px; flex-wrap:wrap; margin-top:10px}
+.choice{
+  flex:1; min-width:190px; text-align:left; padding:14px; border-radius:var(--r-m);
+  border:1.5px solid var(--line); background:var(--surface); transition:border-color .15s, background .15s;
+}
+.choice[aria-pressed="true"]{border-color:var(--brass); background:var(--brass-bg)}
+.choice b{display:block; font-family:var(--display); font-weight:700; font-size:1.02rem}
+.choice small{color:var(--ink-2); font-size:.8rem}
+
+.field{display:flex; flex-direction:column; gap:6px; margin-top:12px}
+.field label{font-size:.78rem; font-weight:700; color:var(--ink-2); text-transform:uppercase; letter-spacing:.06em}
+.input, select.input, textarea.input{
+  width:100%; padding:11px 13px; border-radius:var(--r-s); border:1.5px solid var(--line);
+  background:var(--surface); font-size:.95rem;
+}
+textarea.input{resize:vertical; min-height:78px; font-family:var(--body)}
+.row2{display:flex; gap:12px; flex-wrap:wrap}
+.row2 > *{flex:1; min-width:150px}
+
+.btn{
+  padding:11px 18px; border-radius:var(--r-m); font-weight:700; font-size:.92rem;
+  border:1.5px solid var(--line); background:var(--surface); color:var(--ink);
+}
+.btn:hover{border-color:var(--line-2)}
+.btn.primary{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.btn.primary:hover{filter:brightness(1.15)}
+.btn.danger{background:var(--dang-bg); color:var(--dang); border-color:var(--dang-line)}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btnrow{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+
+.closebar{padding:20px 18px; border-top:1px solid var(--line); background:var(--surface-2); display:flex; gap:14px; align-items:center; flex-wrap:wrap}
+.closebar p{margin:0; font-size:.86rem; color:var(--ink-2); flex:1; min-width:220px}
+
+/* ============================ MODAL ============================ */
+.backdrop{
+  position:fixed; inset:0; z-index:80; background:rgba(9,11,16,.55);
+  display:grid; place-items:center; padding:16px; overflow:auto;
+  animation:fade .16s ease;
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{
+  width:min(560px,100%); background:var(--surface); border-radius:var(--r-l);
+  border:1px solid var(--line); box-shadow:var(--shadow-2); overflow:hidden;
+  animation:pop .18s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes pop{from{transform:translateY(10px) scale(.98); opacity:0}to{transform:none; opacity:1}}
+.modal header{padding:18px 20px 0}
+.modal header h3{font-size:1.25rem; font-weight:700}
+.modal header p{margin:4px 0 0; font-size:.87rem; color:var(--ink-2)}
+.modal .content{padding:16px 20px 4px}
+.modal footer{padding:16px 20px 20px; display:flex; gap:10px; justify-content:flex-end}
+.presets{display:flex; flex-wrap:wrap; gap:7px; margin-top:8px}
+.preset{
+  padding:7px 11px; border-radius:999px; font-size:.82rem; border:1px solid var(--line);
+  background:var(--surface-2); color:var(--ink-2);
+}
+.preset:hover{border-color:var(--line-2); color:var(--ink)}
+.pinpad{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin-top:12px}
+.pinpad button{padding:16px 0; border-radius:var(--r-m); background:var(--surface-2); border:1px solid var(--line); font-family:var(--mono); font-size:1.25rem; font-weight:500}
+.pinpad button:active{background:var(--surface-3)}
+.pindots{display:flex; gap:12px; justify-content:center; margin-top:14px}
+.pindots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-2); display:block}
+.pindots i.on{background:var(--ink); border-color:var(--ink)}
+.err{color:var(--dang); font-size:.85rem; font-weight:600; margin-top:10px; text-align:center; min-height:1.2em}
+
+/* ============================ TOAST ============================ */
+#zoombar{
+  position:fixed; right:16px; bottom:16px; z-index:95;
+  display:flex; align-items:center; gap:4px; padding:6px;
+  background:var(--surface); border:1px solid var(--line-2); border-radius:999px;
+  box-shadow:var(--shadow-2);
+}
+#zoombar[hidden]{display:none}
+#zoombar button{
+  min-width:38px; height:38px; padding:0 12px; border-radius:999px;
+  font-size:1.15rem; font-weight:700; color:var(--ink-2);
+}
+#zoombar button:hover{background:var(--surface-2); color:var(--ink)}
+#zoombar .fermer{font-size:1.3rem; color:var(--ink-3)}
+#zoombar #zoomval{min-width:74px; padding:0 8px; text-align:center; font-size:.86rem; font-weight:500; color:var(--ink)}
+#zoombar #zoomval:hover{background:var(--surface-2)}
+
+#toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:90; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none}
+.toast{
+  background:var(--ink); color:var(--ground); padding:11px 17px; border-radius:999px;
+  font-size:.88rem; font-weight:600; box-shadow:var(--shadow-2); pointer-events:auto;
+  display:flex; gap:12px; align-items:center; animation:pop .2s;
+}
+.toast button{color:var(--brass); font-weight:700; text-decoration:underline; font-size:.85rem}
+
+/* ============================ HISTORY ============================ */
+.pills{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px}
+.pill{padding:8px 14px; border-radius:999px; border:1px solid var(--line); background:var(--surface); font-size:.87rem; font-weight:600; color:var(--ink-2)}
+.pill[aria-pressed="true"]{background:var(--ink); color:var(--ground); border-color:var(--ink)}
+.wk{border-top:1px solid var(--line); padding:16px 18px}
+.wk:first-child{border-top:none}
+.wk h4{font-size:1rem; font-weight:700}
+.wk .lines{display:flex; flex-direction:column; gap:8px; margin-top:10px}
+.wkline{display:flex; align-items:center; gap:10px; font-size:.9rem; flex-wrap:wrap}
+.wkline .nm{font-weight:700; min-width:78px}
+.tag{padding:3px 9px; border-radius:999px; font-size:.75rem; font-weight:700; border:1px solid}
+.tag.good{background:var(--brass-bg); color:var(--brass); border-color:var(--brass-line)}
+.tag.pig{background:var(--pos-bg); color:var(--pos); border-color:var(--pos-line)}
+.tag.none{background:var(--surface-3); color:var(--ink-2); border-color:var(--line-2)}
+.tag.bad{background:var(--dang-bg); color:var(--dang); border-color:var(--dang-line)}
+
+table.tbl{width:100%; border-collapse:collapse; font-size:.9rem}
+table.tbl th{text-align:left; font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-3); padding:10px 14px; border-bottom:1px solid var(--line)}
+table.tbl td{padding:11px 14px; border-bottom:1px solid var(--line)}
+.scroller{overflow-x:auto}
+
+/* ============================ CAGNOTTE ============================ */
+.divider{
+  display:flex; align-items:center; gap:10px; font-size:.67rem; font-weight:700;
+  text-transform:uppercase; letter-spacing:.13em; color:var(--ink-3);
+}
+.divider::after{content:""; flex:1; height:1px; background:var(--line)}
+button.chip{width:100%; text-align:left; font:inherit; font-size:.82rem}
+button.chip.btnlike:hover{border-color:var(--brass); filter:brightness(1.03)}
+.chip .arrow{margin-left:2px; font-size:1.1rem; line-height:1; opacity:.6}
+
+.cagsum{
+  display:flex; align-items:flex-end; gap:16px; padding:16px 18px;
+  border-radius:var(--r-m); background:var(--brass-bg); border:1px solid var(--brass-line);
+}
+.cagbig{font-family:var(--display); font-weight:800; font-size:2.6rem; line-height:1; color:var(--brass); letter-spacing:-.03em}
+.cagbig small{font-size:1.1rem; font-weight:700}
+.cagright{margin-left:auto; text-align:right}
+.cagnext{font-size:.78rem; color:var(--brass)}
+.cagform{margin-top:16px; padding:16px; border-radius:var(--r-m); background:var(--surface-2); border:1px solid var(--line)}
+.amtrow{display:flex; align-items:center; gap:10px}
+.amtrow .input{max-width:140px; font-size:1.15rem; font-weight:500}
+.amtunit{font-size:.9rem; color:var(--ink-2); font-weight:600}
+.hint{font-size:.8rem; color:var(--dang); min-height:1em}
+/* Assistant de première ouverture */
+.aide{display:block; font-size:.8rem; color:var(--ink-2); margin-top:6px; line-height:1.5}
+.wizrow{display:flex; gap:8px; align-items:center; margin-bottom:8px}
+.wizrow input[data-nom]{flex:2; min-width:0}
+.wizrow select{flex:1.2; min-width:0}
+.wizrow .btn{padding:8px 12px; flex:0 0 auto}
+.wizchoices{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:8px}
+/* .choice impose 190px pour la réunion ; dans une grille étroite, cela déborde. */
+.wizchoices .choice{width:auto; min-width:0; padding:12px}
+.wizchoices .choice b{font-size:.95rem}
+.check{display:flex; gap:10px; align-items:flex-start; font-size:.9rem; color:var(--ink-2); margin-top:10px; cursor:pointer}
+.check input{margin-top:3px; flex:0 0 auto}
+.check span{flex:1; line-height:1.45}
+.lien{color:var(--brass); font-weight:700; text-decoration:underline}
+.ouseparateur{display:flex; align-items:center; gap:12px; margin:18px 0; color:var(--ink-3); font-size:.8rem}
+.ouseparateur::before,.ouseparateur::after{content:""; flex:1; height:1px; background:var(--line)}
+.codebox{
+  font-size:1.7rem; letter-spacing:.22em; text-align:center; padding:16px 10px;
+  border-radius:var(--r-m); background:var(--surface-2); border:1px dashed var(--line-2);
+  font-weight:700; word-break:break-all;
+}
+.membre{display:flex; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid var(--line)}
+.membre:last-child{border-bottom:0}
+.membre .r{margin-left:auto; font-size:.78rem; color:var(--ink-2); white-space:nowrap}
+.caglog{margin-top:8px; max-height:300px; overflow-y:auto; border:1px solid var(--line); border-radius:var(--r-m)}
+.cagrow{display:flex; gap:12px; align-items:center; padding:11px 13px; border-top:1px solid var(--line)}
+.cagrow:first-child{border-top:none}
+.cagbody{flex:1; min-width:0}
+.cagnote{font-size:.9rem; font-weight:600; overflow-wrap:anywhere}
+.cagsolde{font-size:.78rem; color:var(--ink-3); white-space:nowrap}
+
+/* Sur un écran large en paysage — la TV du salon — on met le fil des mouvements
+   à côté des cartes plutôt qu'en dessous : tout tient sans faire défiler. */
+@media (orientation: landscape) and (min-width: 1200px){
+  body{ --scale:1.18 }
+  .wrap{max-width:1700px}
+  .home-wide{display:grid; grid-template-columns:minmax(0,2.1fr) minmax(330px,1fr); gap:20px; align-items:start}
+  .hw-side .section{margin-top:0}
+  .hw-side .panel{max-height:calc(100vh - 190px); overflow-y:auto}
+  .meet-child{display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,.85fr); gap:20px 26px; align-items:start}
+  .meet-head{grid-column:1 / -1}
+  .timeline{margin-top:0}
+  .choicebox{margin-top:0}
+}
+@media (orientation: landscape) and (min-width: 1600px){ body{ --scale:1.34 } }
+@media (orientation: landscape) and (min-width: 1900px){ body{ --scale:1.52 } }
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important; transition-duration:.001ms !important}
+}
+@media (max-width:760px){
+  .topbar .row{grid-template-columns:1fr auto; row-gap:9px}
+  .tabs{grid-column:1 / -1; justify-self:center}
+}
+@media (max-width:640px){
+  .score{font-size:2.9rem}
+  .tabs button{padding:7px 12px; font-size:.82rem}
+  .brand span{display:none}
+}
+
+/* ============================ CONNEXION ============================ */
+#gate{
+  position:fixed; inset:0; z-index:100; background:var(--ground);
+  display:grid; place-items:center; padding:22px; overflow:auto;
+}
+#gate[hidden]{display:none}
+.gatecard{
+  width:min(400px,100%); background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-l); box-shadow:var(--shadow-2); padding:30px 26px; text-align:center;
+}
+.gatelogo{color:var(--brass); margin-bottom:12px}
+.gatecard h1{font-size:1.55rem; font-weight:800; letter-spacing:-.02em}
+.gatecard p{color:var(--ink-2); font-size:.92rem; margin:8px 0 20px}
+.gatecard .field{text-align:left}
+.gatecard code{font-family:var(--mono); font-size:.85em; background:var(--surface-2); padding:2px 5px; border-radius:5px}
+.gatefoot{font-size:.8rem !important; color:var(--ink-3) !important; margin:16px 0 0 !important}
+</style>
+</head>
+<body>
+
+
+<div id="gate" hidden></div>
+
+<div id="zoomable">
+<div class="topbar">
+  <div class="wrap row">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M7 3h10v5a5 5 0 0 1-10 0V3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M7 4.5H4.5v1.8A3.2 3.2 0 0 0 7.7 9.5M17 4.5h2.5v1.8a3.2 3.2 0 0 1-3.2 3.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M12 13v4m-3.5 4h7l-.8-2.4a1.5 1.5 0 0 0-1.4-1h-2.6a1.5 1.5 0 0 0-1.4 1L8.5 21Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <b id="brandname">Trophée</b>
+        <span id="brandsub">Tableau de bord familial</span>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="Sections"></nav>
+    <button class="iconbtn" id="zoombtn" title="Loupe — agrandir l'affichage" aria-label="Loupe">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+        <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8"/>
+        <path d="M15.5 15.5 21 21M8 10.5h5M10.5 8v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="wrap"><div id="banners"></div></div>
+<main class="wrap" id="view"></main>
+
+<footer class="statusbar">
+  <div class="status" id="status" title="État de la sauvegarde"><i class="dot"></i><span>—</span></div>
+</footer>
+
+<footer class="signature">
+  <picture>
+    <source srcset="icons/madag-sombre.png" media="(prefers-color-scheme: dark)">
+    <img src="icons/madag.png" alt="Madag Corporation" width="112" height="112">
+  </picture>
+  <p class="amour">Fait avec amour. <span aria-hidden="true">❤️</span></p>
+  <div id="don-bande"></div>
+</footer>
+</div>
+
+<div id="zoombar" hidden>
+  <button data-z="-" aria-label="Réduire">−</button>
+  <button id="zoomval" class="mono" data-z="0" title="Revenir à la taille normale">100 %</button>
+  <button data-z="+" aria-label="Agrandir">+</button>
+  <button data-z="x" class="fermer" aria-label="Fermer la loupe">×</button>
+</div>
+<div id="modal-root"></div>
+<div id="toast"></div>
+
+
+<script src="config.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword,
+         createUserWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification,
+         deleteUser, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+         doc, collection, setDoc, getDoc, deleteDoc, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+window.FBLIB = {
+  initializeApp, getAuth, setPersistence, browserLocalPersistence,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail,
+  sendEmailVerification, deleteUser, signOut, onAuthStateChanged,
+  getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  doc, collection, setDoc, getDoc, deleteDoc, onSnapshot
+};
+window.dispatchEvent(new Event("fblib-ready"));
+</script>
+<script>
+
+(function(){
+"use strict";
+
+/* ====================== CONSTANTES & DÉFAUTS ====================== */
+var LS_BASE = "trophee-pernin/v1";
+var SEEN_BASE = "trophee-pernin/vu";
+/* En mode multi-familles, un même appareil peut servir à deux comptes :
+   le cache local est donc rangé par famille, jamais mélangé. */
+var LS = LS_BASE;
+var SEEN_KEY = SEEN_BASE;
+var PENDING = "trophee-pernin/pending";
+var UNLOCK = "trophee-pernin/unlock";
+var UNLOCK_MS = 30 * 60 * 1000;
+
+/* Le nom peut être posé une fois pour toutes dans config.js, à côté des clés
+   Firebase : c'est le fichier propre à chaque installation. Sinon, l'assistant
+   de première ouverture le demande. */
+var FAMILLE_DEFAUT = (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.famille) || "";
+
+var DEFAULTS = {
+  v: 2,
+  rev: 0,               // version des réglages : tranche les versions qui se croisent
+  // Vide au premier démarrage : l'assistant d'installation les demande.
+  famille: "",           // nom affiché en haut et dans le titre de l'onglet
+  unite: "€",            // suffixe écrit après un nombre : « 5 € », « 30 min »
+  uniteNom: "Cagnotte",  // nom de l'espace qui accumule
+  cadeauPossible: true,  // proposer « un cadeau » en alternative à la cagnotte
+  pin: "",
+  pinEnabled: false,   // le code n'est plus demandé pour les + et les −
+  parentNames: {},     // e-mail -> nom affiché (« Papa (Clément) »…)
+  axes: {},            // enfant -> { label, since } : l'axe de la semaine
+  doubleSiAxe: true,   // axe tenu = points de la semaine comptés double
+  updatedAt: null,
+  weekStart: null,   // fixé au premier point, ou repris du serveur
+  // Les dates de naissance ne sont pas écrites dans ce fichier, qui est public :
+  // elles se saisissent une fois dans Réglages et vivent ensuite dans Firestore,
+  // derrière la connexion.
+  children: [],
+  events: [],
+  weeks: [],
+  sanctions: [],
+  cagnotteLog: [],
+  draft: null,
+  thresholds: { warn:-3, punish:-5 },
+  palier: 5,
+  palierValue: 5,
+  presets: {
+    good: ["A rangé sa chambre","A aidé sans qu'on demande","Devoirs faits tout seul","Gentil avec son frère",
+           "A débarrassé la table","S'est levé du premier coup","A dit merci / pardon","A prêté sans râler"],
+    bad:  ["Insolence, a répondu","Dispute avec son frère","Refus de ranger","Mensonge",
+           "Écran sans autorisation","Devoirs non faits","N'a pas écouté","Chambre en désordre"],
+    sanctions: ["Privé d'écran 1 jour","Privé d'écran 3 jours","Privé d'écran tout le week-end",
+                "Pas de dessert","Corvée supplémentaire","Coucher avancé de 30 min"],
+    cagAdd: ["Bonus exceptionnel","Gros coup de main","Très bon bulletin","Cadeau des grands-parents",
+             "Anniversaire","Argent de poche"],
+    cagSub: ["Achat pour lui","Jouet","Livre / BD","Cinéma","Sortie","Bonbons"],
+    axes: ["Ranger sa chambre tous les soirs","Se lever du premier coup",
+           "Faire ses devoirs sans qu'on demande","Parler sans crier",
+           "Débarrasser la table chaque repas","Ne pas se disputer avec ses frères",
+           "Éteindre l'écran quand on le demande","Dire bonjour et merci"]
+  }
+};
+
+/* ====================== ÉTAT ====================== */
+var S = null;
+var UI = { view:"home", child:null };
+var cloudOn = false, saveTimer = null, cloudWhy = "";
+var GATE_LOGO = '<svg class="gatelogo" width="52" height="52" viewBox="0 0 24 24" fill="none" aria-hidden="true">'
+  + '<path d="M7 3h10v5a5 5 0 0 1-10 0V3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>'
+  + '<path d="M7 4.5H4.5v1.8A3.2 3.2 0 0 0 7.7 9.5M17 4.5h2.5v1.8a3.2 3.2 0 0 1-3.2 3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'
+  + '<path d="M12 13v4m-3.5 4h7l-.8-2.4a1.5 1.5 0 0 0-1.4-1h-2.6a1.5 1.5 0 0 0-1.4 1L8.5 21Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
+
+/* ====================== UTILITAIRES ====================== */
+function uid(){ return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,8); }
+function nowISO(){ return new Date().toISOString(); }
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function el(id){ return document.getElementById(id); }
+function todayISO(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
+function pad(n){ return (n<10?"0":"")+n; }
+function sgn(n){ return n > 0 ? "+" + n : n < 0 ? "−" + Math.abs(n) : "0"; }
+
+/* ---- qui a attribué le point ---- */
+function meEmail(){ return (fb && fb.user && fb.user.email) || ""; }
+function whoName(mail){
+  if(!mail) return "";
+  if(S.parentNames && S.parentNames[mail]) return S.parentNames[mail];
+  var p = String(mail).split("@")[0].replace(/[._-]+/g, " ").trim();
+  return p ? p.charAt(0).toUpperCase() + p.slice(1) : mail;
+}
+function auteursConnus(inclure){
+  var vus = {}, out = [];
+  Object.keys(S.parentNames || {}).forEach(function(m){
+    if(vus[m]) return; vus[m] = 1; out.push({ mail:m, nom: whoName(m) });
+  });
+  S.events.forEach(function(e){
+    if(e.by && !vus[e.by]){ vus[e.by] = 1; out.push({ mail:e.by, nom: whoName(e.by) }); }
+  });
+  if(inclure && !vus[inclure]) out.push({ mail:inclure, nom: whoName(inclure) });
+  return out.sort(function(a,b){ return a.nom < b.nom ? -1 : 1; });
+}
+function parName(mail){ return mail ? ' <span class="par">· par ' + esc(whoName(mail)) + "</span>" : ""; }
+
+/* ---- non-lus, façon messagerie ---- */
+var SEEN_AT = null, NEW_SINCE = null, seenTimer = null, notified = {};
+function loadSeen(){
+  try{ SEEN_AT = localStorage.getItem(SEEN_KEY); }catch(e){ SEEN_AT = null; }
+  if(!SEEN_AT){ SEEN_AT = nowISO(); try{ localStorage.setItem(SEEN_KEY, SEEN_AT); }catch(e){} }
+  NEW_SINCE = SEEN_AT;
+}
+function isNew(e){
+  return !!(NEW_SINCE && e.at > NEW_SINCE && e.by && e.by !== meEmail());
+}
+function unseen(){
+  return S.events.filter(function(e){
+    return !e.deleted && SEEN_AT && e.at > SEEN_AT && e.by && e.by !== meEmail();
+  });
+}
+function syncAppBadge(n){
+  try{
+    if(navigator.setAppBadge){ if(n > 0) navigator.setAppBadge(n); else navigator.clearAppBadge(); }
+  }catch(e){}
+}
+function scheduleMarkSeen(){
+  clearTimeout(seenTimer);
+  if(UI.view !== "home" || document.visibilityState !== "visible") return;
+  if(!unseen().length) return;
+  seenTimer = setTimeout(function(){
+    SEEN_AT = nowISO();
+    try{ localStorage.setItem(SEEN_KEY, SEEN_AT); }catch(e){}
+    render();
+  }, 2500);
+}
+function maybeNotify(list){
+  if(document.visibilityState === "visible") return;
+  if(!("Notification" in window) || Notification.permission !== "granted") return;
+  var me = meEmail();
+  list.forEach(function(e){
+    if(!e || e.deleted || notified[e.id]) return;
+    if(!e.by || e.by === me) return;
+    if(SEEN_AT && e.at <= SEEN_AT) return;
+    notified[e.id] = 1;
+    try{
+      new Notification(nameOf(e.child) + " " + sgn(e.delta) + " point", {
+        body: e.note + " — par " + whoName(e.by),
+        icon: "icons/icon-192.png",
+        tag: e.id
+      });
+    }catch(err){}
+  });
+}
+function dateOnly(iso){ return String(iso||"").slice(0,10); }
+
+var MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+var JOURS = ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+
+function fDate(iso){
+  if(!iso) return "—";
+  var d = new Date(iso.length<=10 ? iso+"T12:00:00" : iso);
+  if(isNaN(d)) return "—";
+  return d.getDate() + " " + MOIS[d.getMonth()];
+}
+function fDateFull(iso){
+  if(!iso) return "—";
+  var d = new Date(iso.length<=10 ? iso+"T12:00:00" : iso);
+  if(isNaN(d)) return "—";
+  return JOURS[d.getDay()] + " " + d.getDate() + " " + MOIS[d.getMonth()] + " " + d.getFullYear();
+}
+function fWhen(iso){
+  var d = new Date(iso);
+  if(isNaN(d)) return "—";
+  return JOURS[d.getDay()].slice(0,3) + " " + d.getDate() + " " + MOIS[d.getMonth()].slice(0,4) + " · " + pad(d.getHours()) + "h" + pad(d.getMinutes());
+}
+function ageOf(birth){
+  var b = new Date(birth+"T12:00:00"), t = new Date();
+  if(isNaN(b)) return null;
+  var a = t.getFullYear() - b.getFullYear();
+  var m = t.getMonth() - b.getMonth();
+  if(m < 0 || (m === 0 && t.getDate() < b.getDate())) a--;
+  return a;
+}
+function daysBetween(aISO, bISO){
+  var a = new Date(dateOnly(aISO)+"T12:00:00"), b = new Date(dateOnly(bISO)+"T12:00:00");
+  return Math.round((b - a) / 86400000);
+}
+
+/* ====================== SÉLECTEURS ====================== */
+function child(id){ for(var i=0;i<S.children.length;i++){ if(S.children[i].id===id) return S.children[i]; } return null; }
+function nameOf(id){ var c = child(id); return c ? c.name : "?"; }
+var COULEURS = [
+  { cle:"bleu", nom:"Bleu" }, { cle:"cyan", nom:"Cyan" }, { cle:"vert", nom:"Vert" },
+  { cle:"ambre", nom:"Ambre" }, { cle:"corail", nom:"Corail" }, { cle:"rose", nom:"Rose" },
+  { cle:"violet", nom:"Violet" }, { cle:"ardoise", nom:"Ardoise" }
+];
+function laneOf(id){ var c = child(id); return "col-" + ((c && c.couleur) || "bleu"); }
+
+function eventsOfWeek(week, childId){
+  if(!week) return [];
+  return S.events.filter(function(e){
+    return !e.deleted && e.week === week && (!childId || e.child === childId);
+  }).sort(function(a,b){ return a.at < b.at ? 1 : -1; });
+}
+function scoreOf(childId, week){
+  return eventsOfWeek(week || S.weekStart, childId).reduce(function(s,e){ return s + e.delta; }, 0);
+}
+function cagnotteOf(childId){   // en euros
+  return S.cagnotteLog.filter(function(l){ return !l.deleted && l.child === childId; })
+                      .reduce(function(s,l){ return s + l.delta; }, 0);
+}
+function activeSanctions(childId){
+  var t = todayISO();
+  return S.sanctions.filter(function(s){
+    return !s.deleted && s.child === childId && (!s.end || s.end >= t);
+  }).sort(function(a,b){ return a.end < b.end ? -1 : 1; });
+}
+function axeOf(childId){ return (S.axes && S.axes[childId]) || null; }
+
+/* L'axe d'amélioration se déduit des bêtises de la semaine : on regarde de quoi
+   elles parlent et on propose le thème qui revient le plus souvent. */
+var THEMES = [
+  { axe:"Ranger sa chambre tous les soirs",     mots:["chambre","desordre","bazar","range","rang","affaires","jouets par terre"] },
+  { axe:"Parler sans crier",                    mots:["crie","cri","hurle","braille","colere","crise","enerve"] },
+  { axe:"Ne pas se disputer avec ses frères",   mots:["dispute","frere","bagarre","tape","chamaille","embete","pousse"] },
+  { axe:"Éteindre l'écran quand on le demande", mots:["ecran","tablette","tele","tv","console","youtube","jeu video","telephone"] },
+  { axe:"Faire ses devoirs sans qu'on demande", mots:["devoir","lecon","ecole","cahier","maitresse","classe"] },
+  { axe:"Se lever du premier coup",             mots:["lever","leve","reveil","debout","matin","retard"] },
+  { axe:"Débarrasser la table à chaque repas",  mots:["table","debarrass","repas","assiette","vaisselle","manger","mange"] },
+  { axe:"Répondre poliment",                    mots:["insolen","repond","impoli","grossier","gros mot","mal parle","insulte"] },
+  { axe:"Dire la vérité",                       mots:["mensonge","menti","ment ","cache la verite"] },
+  { axe:"Se coucher sans discuter",             mots:["coucher","couche","dormir","au lit","nuit","sieste"] },
+  { axe:"Écouter du premier coup",              mots:["ecout","obei","refus","n'a pas fait","ne fait pas","desobei"] },
+  { axe:"Prendre soin de ses affaires",         mots:["casse","abime","jete","balance","perdu","salit"] }
+];
+function sansAccent(txt){
+  txt = String(txt || "").toLowerCase();
+  return txt.normalize ? txt.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : txt;
+}
+function proposerAxe(childId){
+  var negs = eventsOfWeek(S.weekStart, childId).filter(function(e){ return e.delta < 0; });
+  if(!negs.length) return null;
+  var notes = negs.map(function(e){ return sansAccent(e.note); });
+  var best = null;
+  THEMES.forEach(function(t){
+    var n = 0;
+    notes.forEach(function(txt){
+      for(var i = 0; i < t.mots.length; i++){ if(txt.indexOf(t.mots[i]) >= 0){ n++; return; } }
+    });
+    if(n > 0 && (!best || n > best.n)) best = { axe: t.axe, n: n };
+  });
+  if(!best) return null;
+  return { axe: best.axe, n: best.n, total: negs.length };
+}
+function totalCompte(n, axeTenu){
+  return (S.doubleSiAxe && axeTenu && n > 0) ? n * 2 : n;
+}
+function zoneOf(n){
+  if(n <= S.thresholds.punish) return "bad";
+  if(n <= S.thresholds.warn) return "warn";
+  if(n > 0) return "good";
+  return "none";
+}
+function verdictLabel(n){
+  var z = zoneOf(n);
+  if(z === "good") return { cls:"v-good", txt:"Trophée en vue", icon:"🏆" };  // cadeau ou argent, au choix
+  if(z === "bad")  return { cls:"v-bad",  txt:"Zone rouge — sanction", icon:"⛔" };
+  if(z === "warn") return { cls:"v-warn", txt:"Zone orange — attention", icon:"⚠️" };
+  if(n === 0)      return { cls:"v-none", txt:"À l'équilibre", icon:"•" };
+  return { cls:"v-none", txt:"Négatif — pas de trophée", icon:"•" };
+}
+// Les points mesurent le comportement de la semaine.
+// La cagnotte est un porte-monnaie en euros.
+// Dès que la semaine est positive, le trophée vaut 5 €.
+// Chaque palier de 5 points complet ajoute 5 € PAR-DESSUS :
+//   +1 à +4 = 5 €   ·   +5 = 10 €   ·   +10 = 15 €   ·   +15 = 20 €
+function euroValue(pts){
+  var p = S.palier || 5, v = S.palierValue || 5;
+  if(pts <= 0) return 0;
+  return v + Math.floor(pts / p) * v;
+}
+function palierInfo(pts){
+  var p = S.palier || 5, v = S.palierValue || 5;
+  var n = Math.max(0, pts);
+  var euros = euroValue(n);
+  var suivant = euros + v;
+  // Tant que la semaine n'est pas positive, le premier trophée se gagne au premier point
+  // au-dessus de zéro : à −3, il en faut quatre.
+  if(euros === 0) return { euros:0, next:v, missing: 1 - Math.min(0, pts) };
+  var pointsRequis = (euros / v) * p;        // 10 € demande 5 points, 15 € en demande 10
+  return { euros: euros, next: suivant, missing: Math.max(0, pointsRequis - n) };
+}
+/* L'unité de récompense est réglable : euros, minutes d'écran, points…
+   Tout ce qui affiche un montant passe par ces trois fonctions. */
+function U(){ return (S && S.unite) || "€"; }
+function nomCagnotte(){ return (S && S.uniteNom) || "Cagnotte"; }
+function fMontant(n){ return n + " " + U(); }
+function fEur(n){ return (n < 0 ? "−" : "") + Math.abs(n) + " " + U(); }
+function titreApp(){ return (S && S.famille) ? "Trophée " + S.famille : "Trophée"; }
+
+/* ====================== FUSION / CHARGEMENT ====================== */
+function mergeById(A, B){
+  var m = {}, out = [], k;
+  (A||[]).forEach(function(it){ if(it && it.id) m[it.id] = it; });
+  (B||[]).forEach(function(it){
+    if(!it || !it.id) return;
+    var cur = m[it.id];
+    if(!cur){ m[it.id] = it; return; }
+    var merged = {};
+    for(k in cur) merged[k] = cur[k];
+    for(k in it) merged[k] = it[k];
+    merged.deleted = !!(cur.deleted || it.deleted);
+    m[it.id] = merged;
+  });
+  for(k in m) out.push(m[k]);
+  return out;
+}
+function merge(a, b){
+  var newer = (new Date(b.updatedAt || 0) >= new Date(a.updatedAt || 0)) ? b : a;
+  var out = clone(newer);
+  out.events      = mergeById(a.events, b.events);
+  out.weeks       = mergeById(a.weeks, b.weeks);
+  out.sanctions   = mergeById(a.sanctions, b.sanctions);
+  out.cagnotteLog = mergeById(a.cagnotteLog, b.cagnotteLog);
+  var wa = a.weekStart || "", wb = b.weekStart || "";
+  out.weekStart = wa > wb ? wa : wb;
+  return out;
+}
+function migrate(s){
+  var d = clone(DEFAULTS);
+  ["events","weeks","sanctions","cagnotteLog"].forEach(function(k){ if(!Array.isArray(s[k])) s[k] = []; });
+  if(!Array.isArray(s.children)) s.children = [];
+  // Les couleurs étaient trois emplacements fixes ; elles deviennent un choix.
+  var ancien = { c1:"cyan", c2:"ambre", c3:"rose" }, dispo = ["bleu","cyan","vert","ambre","corail","rose","violet","ardoise"];
+  s.children.forEach(function(c, i){
+    if(!c.couleur) c.couleur = ancien[c.lane] || dispo[i % dispo.length];
+    delete c.lane;
+  });
+  if(!s.presets) s.presets = d.presets;
+  ["good","bad","sanctions","cagAdd","cagSub","axes"].forEach(function(k){ if(!Array.isArray(s.presets[k])) s.presets[k] = d.presets[k]; });
+  if(!s.thresholds) s.thresholds = d.thresholds;
+  if(!s.palier) s.palier = d.palier;
+  if(!s.palierValue) s.palierValue = d.palierValue;
+  if(typeof s.pin !== "string") s.pin = d.pin;
+  if(typeof s.famille !== "string" || !s.famille) s.famille = FAMILLE_DEFAUT;
+  if(typeof s.unite !== "string" || !s.unite) s.unite = d.unite;
+  if(typeof s.uniteNom !== "string" || !s.uniteNom) s.uniteNom = d.uniteNom;
+  if(typeof s.cadeauPossible !== "boolean") s.cadeauPossible = d.cadeauPossible;
+  if(typeof s.rev !== "number") s.rev = 0;
+  if(typeof s.pinEnabled !== "boolean") s.pinEnabled = false;
+  if(!s.parentNames || typeof s.parentNames !== "object") s.parentNames = {};
+  if(!s.axes || typeof s.axes !== "object") s.axes = {};
+  if(typeof s.doubleSiAxe !== "boolean") s.doubleSiAxe = true;
+  // On n'invente jamais de semaine : un appareil neuf reprend celle du serveur.
+  // S'il reçoit les points avant les réglages, il la déduit des points reçus.
+  if(!s.weekStart){
+    var archived = {};
+    s.weeks.forEach(function(w){ archived[w.id] = 1; });
+    var mx = null;
+    s.events.forEach(function(e){ if(e.week && !archived[e.week] && (!mx || e.week > mx)) mx = e.week; });
+    if(mx) s.weekStart = mx;
+  }
+  return s;
+}
+
+function readJSON(str){ try{ return JSON.parse(str); }catch(e){ return null; } }
+
+var fb = { app:null, auth:null, db:null, base:null, user:null, unsubs:[], unsubMoi:null, unsubMembres:null };
+var MULTI = false;                       // une branche par famille, inscription libre
+var moi = { famille:null, role:null };   // à quelle famille j'appartiens, et à quel titre
+var MEMBRES = [];                        // les comptes de ma famille (mode multi)
+var CFG = null, slowTimer = null;
+var readOnly = false;   // vrai pour le compte des enfants : consultation uniquement
+
+/* Les listes sont stockées une ligne par document : deux parents qui cochent
+   au même moment écrivent dans des documents différents, donc rien ne peut
+   s'écraser. Seuls les réglages vivent dans un document unique. */
+var LISTS = ["events", "cagnotteLog", "sanctions", "weeks"];
+var COLS  = { events:"events", cagnotteLog:"cagnotte", sanctions:"sanctions", weeks:"semaines" };
+var savedSig = { events:{}, cagnotteLog:{}, sanctions:{}, weeks:{} };
+
+function settingsOf(s){
+  return { v:s.v, rev:s.rev || 0, pin:s.pin, pinEnabled:s.pinEnabled, parentNames:s.parentNames,
+           famille:s.famille, unite:s.unite, uniteNom:s.uniteNom, cadeauPossible:s.cadeauPossible,
+           axes:s.axes, doubleSiAxe:s.doubleSiAxe, children:s.children, presets:s.presets, thresholds:s.thresholds,
+           palier:s.palier, palierValue:s.palierValue, weekStart:s.weekStart,
+           draft:s.draft || null, updatedAt:s.updatedAt || null };
+}
+
+function loadLocalState(){
+  loadSeen();
+  var local = readJSON(localStorage.getItem(LS));
+  S = migrate(local || clone(DEFAULTS));
+  noterSignature();
+}
+
+function estEssai(){ return !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.essai); }
+
+function boot(){
+  loadLocalState();
+  render();
+
+  // Version d'essai : on n'ouvre ni compte ni serveur. Elle sert à voir
+  // l'assistant tourner sans toucher aux données d'une vraie famille.
+  if(estEssai()){
+    cloudOn = false;
+    cloudWhy = "version d'essai : rien n'est envoyé sur un serveur";
+    setStatus("off"); showGate("essai"); return;
+  }
+
+  if(!window.FBLIB){
+    cloudOn = false;
+    cloudWhy = "la bibliothèque Firebase n'a pas pu être chargée (pas de connexion ?)";
+    setStatus("off"); renderBanners(); return;
+  }
+  if(!window.FIREBASE_CONFIG || !window.FIREBASE_CONFIG.apiKey || /COLLE/i.test(String(window.FIREBASE_CONFIG.apiKey))){
+    cloudOn = false;
+    cloudWhy = "le fichier config.js ne contient pas encore les clés Firebase";
+    setStatus("off"); showGate("config"); renderBanners(); return;
+  }
+
+  CFG = window.FIREBASE_CONFIG;
+  CFG.collection = CFG.collection || "familles";
+  CFG.document   = CFG.document   || "pernin";
+  MULTI = !!CFG.multi;
+  try{
+    fb.app  = FBLIB.initializeApp(CFG);
+    fb.auth = FBLIB.getAuth(fb.app);
+    try{
+      fb.db = FBLIB.initializeFirestore(fb.app, {
+        localCache: FBLIB.persistentLocalCache({ tabManager: FBLIB.persistentMultipleTabManager() })
+      });
+    }catch(e){ fb.db = FBLIB.getFirestore(fb.app); }
+    fb.base = FBLIB.doc(fb.db, CFG.collection, CFG.document);
+
+    FBLIB.setPersistence(fb.auth, FBLIB.browserLocalPersistence).catch(function(){});
+    FBLIB.onAuthStateChanged(fb.auth, function(user){
+      fb.user = user || null;
+      if(user){
+        if(MULTI){ suivreAppartenance(user); }
+        else{ hideGate(); checkWriteAccess(user); startSync(); }
+      }
+      else{
+        stopSync(); arreterAppartenance();
+        moi = { famille:null, role:null }; MEMBRES = [];
+        cloudOn = false; setStatus("off"); showGate("login");
+      }
+      render();
+    });
+  }catch(e){
+    cloudOn = false;
+    cloudWhy = "Firebase n'a pas démarré : " + (e && e.message);
+    setStatus("off"); renderBanners();
+  }
+}
+
+/* Le serveur décide qui peut écrire. On le lui demande une fois, à la connexion :
+   si l'écriture est refusée, l'appareil passe en consultation seule. */
+function checkWriteAccess(user){
+  readOnly = false;
+  if(!fb.db || !CFG) return;
+  FBLIB.setDoc(FBLIB.doc(fb.db, CFG.collection, CFG.document, "presence", user.uid),
+               { at: nowISO(), email: user.email || "" })
+    .then(function(){
+      readOnly = false; accesVerifie = true; render();
+      setTimeout(function(){ verifierConfiguration(); }, 700);
+    })
+    .catch(function(err){
+      accesVerifie = true;
+      if(err && err.code === "permission-denied"){ readOnly = true; render(); }
+    });
+}
+
+/* ====================== SYNCHRONISATION ====================== */
+function onSyncError(err){
+  // En multi-familles, un refus de lecture signifie le plus souvent que la
+  // famille a été supprimée, ou qu'on en a été retiré : on ne laisse pas
+  // l'appareil tourner sur des données qui n'existent plus.
+  if(MULTI && err && err.code === "permission-denied" && moi.famille){
+    oublierLaFamilleLocalement();
+    if(fb.user) FBLIB.deleteDoc(FBLIB.doc(fb.db, "utilisateurs", fb.user.uid)).catch(function(){});
+    showGate("famille"); render();
+    return;
+  }
+  cloudOn = false;
+  cloudWhy = "Firebase a refusé la lecture (" + ((err && err.code) || "inconnu") + ")";
+  setStatus("off"); renderBanners();
+}
+function applyRemoteSettings(remote){
+  var vue = settingsOf(remote);
+
+  // Version plus ancienne que la nôtre : c'est notre propre passé, on l'ignore.
+  if(typeof vue.rev === "number" && typeof S.rev === "number" && vue.rev < S.rev) return;
+  // Filet pour les installations d'avant les numéros de version.
+  if(reglagesEnAttente && !vue.rev){
+    if(!vue.updatedAt || (S.updatedAt && vue.updatedAt < S.updatedAt)) return;
+  }
+
+  // Les réglages venus du serveur sont appliqués tels quels. On n'utilise PAS
+  // merge() ici : il départage deux états par leur horodatage, or celui-ci
+  // change à chaque point coché. Un réglage tout juste modifié se retrouvait
+  // alors écarté parce qu'un point plus récent existait ailleurs — la
+  // modification disparaissait sans bruit. Les listes, elles, arrivent par
+  // leurs propres collections et ne passent jamais par ici.
+  var semaineLocale = S.weekStart || "", k;
+  for(k in vue){ if(vue[k] !== undefined && vue[k] !== null) S[k] = vue[k]; }
+  S.updatedAt = remote.updatedAt || S.updatedAt || null;
+  S.draft     = remote.draft || null;
+  if(semaineLocale > (S.weekStart || "")) S.weekStart = semaineLocale;
+
+  S = migrate(S);
+  reglagesConnus = signatureReglages(S);
+  noterSignature();
+}
+var firstSnap = {};
+function startSync(){
+  if(fb.unsubs.length) return;
+  firstSnap = {};
+  setStatus("saving");
+
+  fb.unsubs.push(FBLIB.onSnapshot(fb.base, function(snap){
+    cloudOn = true;
+    if(!snap.exists()){ queueSave(true); firstSnap.settings = true; verifierConfiguration(); return; }
+    var d = snap.data(), remote = readJSON(d && d.json);
+    if(remote){ applyRemoteSettings(remote); persistLocal(); render(); }
+    firstSnap.settings = true;
+    setStatus("saved"); renderBanners(); verifierConfiguration();
+  }, onSyncError));
+
+  LISTS.forEach(function(k){
+    var cref = FBLIB.collection(fb.db, CFG.collection, CFG.document, COLS[k]);
+    fb.unsubs.push(FBLIB.onSnapshot(cref, function(snap){
+      cloudOn = true;
+      var remote = [];
+      snap.forEach(function(d){
+        var it = d.data();
+        if(it && it.id){ remote.push(it); savedSig[k][it.id] = JSON.stringify(it); }
+      });
+      var avant = firstSnap[k];
+      S[k] = mergeById(S[k], remote);
+      if(k === "events" && avant) maybeNotify(remote);
+      firstSnap[k] = true;
+      persistLocal(); render();
+      setStatus("saved"); renderBanners();
+    }, onSyncError));
+  });
+}
+function stopSync(){
+  fb.unsubs.forEach(function(u){ try{ u(); }catch(e){} });
+  fb.unsubs = [];
+  savedSig = { events:{}, cagnotteLog:{}, sanctions:{}, weeks:{} };
+}
+
+/* ====================== ASSISTANT DE PREMIÈRE OUVERTURE ======================
+   Une base vide ne contient ni nom de famille ni enfants : on pose les questions
+   une fois, puis tout reste modifiable dans les Réglages. L'assistant ne se
+   déclenche jamais sur une installation déjà configurée, ni pour un compte en
+   lecture seule. */
+var accesVerifie = false, assistantOuvert = false;
+
+var MODELES_RECOMPENSE = [
+  { cle:"argent", titre:"De l'argent",      unite:"€",    nom:"Cagnotte",           valeur:5,  ex:"5 € par palier" },
+  { cle:"ecran",  titre:"Du temps d'écran", unite:"min",  nom:"Temps d'écran",      valeur:30, ex:"30 min par palier" },
+  { cle:"points", titre:"Des points",       unite:"pts",  nom:"Réserve de points",  valeur:10, ex:"10 points par palier" }
+];
+
+function configurationFaite(){
+  // Le seul critère est la présence d'enfants : les installations d'avant
+  // l'assistant en ont, et ne doivent surtout pas se voir reposer les questions.
+  return !!(S && S.children && S.children.length);
+}
+function verifierConfiguration(force){
+  if(assistantOuvert) return;
+  if(!force && (!accesVerifie || !firstSnap.settings)) return;
+  if(readOnly) return;
+  if(!configurationFaite()){ assistantDemarrage(); return; }
+  askMyName();
+  setTimeout(peutEtreLeDon, 9000);
+}
+
+function coulLibre(prises){
+  for(var i = 0; i < COULEURS.length; i++) if(!prises[COULEURS[i].cle]) return COULEURS[i].cle;
+  return COULEURS[0].cle;
+}
+
+function assistantDemarrage(){
+  assistantOuvert = true;
+  var etape = 1;
+  var d = {
+    famille: "",
+    enfants: [{ name:"", couleur:COULEURS[1].cle }, { name:"", couleur:COULEURS[3].cle }],
+    modele: "argent",
+    unite: "€", uniteNom: "Cagnotte",
+    palier: 5, palierValue: 5,
+    cadeau: true,
+    warn: -3, punish: -5,
+    pin: ""
+  };
+
+  function vueEnfants(){
+    return d.enfants.map(function(e, i){
+      var prises = {};
+      d.enfants.forEach(function(x, j){ if(j !== i) prises[x.couleur] = 1; });
+      return '<div class="wizrow" data-row="' + i + '">' +
+        '<input class="input" data-nom="' + i + '" value="' + esc(e.name) + '" placeholder="Prénom" autocomplete="off">' +
+        '<select class="input" data-coul="' + i + '" aria-label="Couleur">' +
+          COULEURS.map(function(c){
+            return '<option value="' + c.cle + '"' + (e.couleur === c.cle ? " selected" : "") +
+                   (prises[c.cle] ? " disabled" : "") + ">" + c.nom + (prises[c.cle] ? " (prise)" : "") + "</option>";
+          }).join("") +
+        "</select>" +
+        (d.enfants.length > 1 ? '<button type="button" class="btn ghost" data-retirer="' + i + '" aria-label="Retirer">✕</button>' : "") +
+      "</div>";
+    }).join("");
+  }
+
+  function contenu(){
+    if(etape === 1){
+      return '<div class="content">' +
+        '<div class="field"><label for="wz-fam">Le nom de la famille</label>' +
+        '<input class="input" id="wz-fam" value="' + esc(d.famille) + '" placeholder="Pernin" data-autofocus>' +
+        '<small class="aide">Il s\'affiche en haut de l\'application : « Trophée Pernin ».</small></div>' +
+        '<div class="field"><label>Les enfants</label><div id="wz-enf">' + vueEnfants() + '</div>' +
+        '<button type="button" class="btn ghost" id="wz-add" style="margin-top:8px">+ Ajouter un enfant</button></div>' +
+      "</div>";
+    }
+    if(etape === 2){
+      return '<div class="content">' +
+        '<div class="field"><label>La récompense d\'une semaine positive</label><div class="wizchoices">' +
+        MODELES_RECOMPENSE.map(function(m){
+          return '<button type="button" class="choice" data-modele="' + m.cle + '" aria-pressed="' + (d.modele === m.cle) + '">' +
+                 "<b>" + m.titre + "</b><small>" + m.ex + "</small></button>";
+        }).join("") +
+        '<button type="button" class="choice" data-modele="libre" aria-pressed="' + (d.modele === "libre") + '">' +
+        "<b>Autre chose</b><small>À nommer soi-même</small></button>" +
+        "</div></div>" +
+        '<div class="row2">' +
+          '<div class="field"><label for="wz-pal">Palier (points)</label><input class="input mono" type="number" id="wz-pal" min="1" value="' + d.palier + '"></div>' +
+          '<div class="field"><label for="wz-val">Vaut</label><input class="input mono" type="number" id="wz-val" min="1" value="' + d.palierValue + '"></div>' +
+        "</div>" +
+        '<div class="row2">' +
+          '<div class="field"><label for="wz-uni">Unité</label><input class="input" id="wz-uni" value="' + esc(d.unite) + '" placeholder="€"></div>' +
+          '<div class="field"><label for="wz-unom">Nom de la réserve</label><input class="input" id="wz-unom" value="' + esc(d.uniteNom) + '" placeholder="Cagnotte"></div>' +
+        "</div>" +
+        '<label class="check"><input type="checkbox" id="wz-cad"' + (d.cadeau ? " checked" : "") +
+        '><span>Proposer aussi <b>un cadeau</b>, au choix de l\'enfant</span></label>' +
+        '<p class="aide" id="wz-apercu"></p>' +
+      "</div>";
+    }
+    return '<div class="content">' +
+      '<div class="row2">' +
+        '<div class="field"><label for="wz-warn">Alerte à partir de</label><input class="input mono" type="number" id="wz-warn" max="0" value="' + d.warn + '"></div>' +
+        '<div class="field"><label for="wz-pun">Sanction à partir de</label><input class="input mono" type="number" id="wz-pun" max="0" value="' + d.punish + '"></div>' +
+      "</div>" +
+      '<div class="field"><label for="wz-pin">Code parent (4 chiffres)</label>' +
+      '<input class="input mono" id="wz-pin" inputmode="numeric" maxlength="4" value="' + esc(d.pin) + '" placeholder="0000">' +
+      '<small class="aide">Il est demandé pour supprimer ou modifier une ligne, toucher à une réserve et clôturer la semaine — c\'est ce qui empêche un enfant de faire disparaître une bêtise. Il n\'est pas demandé pour cocher un simple + ou −.</small></div>' +
+    "</div>";
+  }
+
+  function dessiner(){
+    openModal(
+      '<header><h3>Bienvenue</h3><p>Étape ' + etape + ' sur 3 — ' +
+      (etape === 1 ? "la famille" : etape === 2 ? "la récompense" : "les seuils et le code") + '</p></header>' +
+      contenu() +
+      '<footer>' +
+      (etape > 1 ? '<button class="btn ghost" id="wz-back">Retour</button>' : '<span></span>') +
+      '<button class="btn primary" id="wz-next">' + (etape < 3 ? "Suivant" : "C\'est parti") + "</button></footer>",
+      brancher
+    );
+  }
+
+  function apercu(root){
+    var z = root.querySelector("#wz-apercu"); if(!z) return;
+    var u = (root.querySelector("#wz-uni").value.trim() || "€");
+    var p = Math.max(1, parseInt(root.querySelector("#wz-pal").value, 10) || 5);
+    var v = Math.max(1, parseInt(root.querySelector("#wz-val").value, 10) || 5);
+    z.textContent = "Une semaine positive vaut " + v + " " + u + " ; +" + p + " points en valent " +
+                    (2 * v) + " " + u + " ; +" + (2 * p) + " points, " + (3 * v) + " " + u + ".";
+  }
+
+  function lireEtape1(root){
+    d.famille = root.querySelector("#wz-fam").value.trim();
+    root.querySelectorAll("[data-nom]").forEach(function(i){
+      d.enfants[+i.getAttribute("data-nom")].name = i.value.trim();
+    });
+    root.querySelectorAll("[data-coul]").forEach(function(sel){
+      d.enfants[+sel.getAttribute("data-coul")].couleur = sel.value;
+    });
+  }
+  function lireEtape2(root){
+    d.palier      = Math.max(1, parseInt(root.querySelector("#wz-pal").value, 10) || 5);
+    d.palierValue = Math.max(1, parseInt(root.querySelector("#wz-val").value, 10) || 5);
+    d.unite       = root.querySelector("#wz-uni").value.trim() || "€";
+    d.uniteNom    = root.querySelector("#wz-unom").value.trim() || "Cagnotte";
+    d.cadeau      = root.querySelector("#wz-cad").checked;
+  }
+
+  function brancher(root){
+    if(etape === 1){
+      root.querySelector("#wz-add").onclick = function(){
+        lireEtape1(root);
+        var prises = {}; d.enfants.forEach(function(x){ prises[x.couleur] = 1; });
+        d.enfants.push({ name:"", couleur:coulLibre(prises) });
+        root.querySelector("#wz-enf").innerHTML = vueEnfants();
+        brancher(root);
+      };
+      root.querySelectorAll("[data-retirer]").forEach(function(b){
+        b.onclick = function(){
+          lireEtape1(root);
+          d.enfants.splice(+b.getAttribute("data-retirer"), 1);
+          root.querySelector("#wz-enf").innerHTML = vueEnfants();
+          brancher(root);
+        };
+      });
+    }
+    if(etape === 2){
+      root.querySelectorAll("[data-modele]").forEach(function(b){
+        b.onclick = function(){
+          lireEtape2(root);
+          d.modele = b.getAttribute("data-modele");
+          var m = null;
+          MODELES_RECOMPENSE.forEach(function(x){ if(x.cle === d.modele) m = x; });
+          if(m){ d.unite = m.unite; d.uniteNom = m.nom; d.palierValue = m.valeur; }
+          dessiner();
+        };
+      });
+      ["#wz-uni","#wz-pal","#wz-val"].forEach(function(sel){
+        var i = root.querySelector(sel); if(i) i.oninput = function(){ apercu(root); };
+      });
+      apercu(root);
+    }
+    var back = root.querySelector("#wz-back");
+    if(back) back.onclick = function(){
+      if(etape === 2) lireEtape2(root); 
+      etape--; dessiner();
+    };
+    root.querySelector("#wz-next").onclick = function(){
+      if(etape === 1){
+        lireEtape1(root);
+        if(d.famille.length < 2){ signaler(root, "#wz-fam"); return; }
+        var bon = true;
+        d.enfants.forEach(function(e, i){ if(e.name.length < 2){ bon = false; signaler(root, '[data-nom="' + i + '"]'); } });
+        if(!bon) return;
+        etape = 2; dessiner(); return;
+      }
+      if(etape === 2){ lireEtape2(root); etape = 3; dessiner(); return; }
+      var pin = (root.querySelector("#wz-pin").value || "").replace(/\D/g, "");
+      if(pin.length !== 4){ signaler(root, "#wz-pin"); return; }
+      d.warn   = Math.min(0, parseInt(root.querySelector("#wz-warn").value, 10) || -3);
+      d.punish = Math.min(0, parseInt(root.querySelector("#wz-pun").value, 10) || -5);
+      d.pin    = pin;
+      appliquerAssistant(d);
+    };
+  }
+  function signaler(root, sel){
+    var i = root.querySelector(sel); if(!i) return;
+    i.style.borderColor = "var(--dang)"; i.focus();
+  }
+
+  dessiner();
+}
+
+function appliquerAssistant(d){
+  S.famille        = d.famille;
+  S.children       = d.enfants.map(function(e, i){
+    return { id: "c_" + uid(), name: e.name, birth: "", couleur: e.couleur };
+  });
+  S.unite          = d.unite;
+  S.uniteNom       = d.uniteNom;
+  S.cadeauPossible = !!d.cadeau;
+  S.palier         = d.palier;
+  S.palierValue    = d.palierValue;
+  S.thresholds     = { warn: d.warn, punish: d.punish };
+  S.pin            = d.pin;
+  S.pinEnabled     = false;
+  assistantOuvert  = false;
+  closeModal();
+  touch();
+  toast("Tout est prêt — bienvenue chez les " + d.famille);
+  setTimeout(askMyName, 900);
+}
+
+/* ====================== MULTI-FAMILLES ==============================
+   Chaque famille est une branche à part : familles/{id}. On sait à
+   laquelle on appartient grâce à un document personnel, utilisateurs/{uid},
+   que seul son propriétaire peut lire. Le cloisonnement lui-même est
+   appliqué par les règles Firestore, pas par cette page : un compte qui
+   n'est pas membre d'une famille n'obtient rien du serveur, même en
+   devinant l'identifiant de la branche. */
+
+function arreterAppartenance(){
+  if(fb.unsubMoi){ try{ fb.unsubMoi(); }catch(e){} fb.unsubMoi = null; }
+  if(fb.unsubMembres){ try{ fb.unsubMembres(); }catch(e){} fb.unsubMembres = null; }
+}
+
+function suivreAppartenance(user){
+  arreterAppartenance();
+  fb.unsubMoi = FBLIB.onSnapshot(
+    FBLIB.doc(fb.db, "utilisateurs", user.uid),
+    function(snap){
+      var d = snap.exists() ? snap.data() : null;
+      if(!d || !d.famille){
+        moi = { famille:null, role:null }; MEMBRES = [];
+        stopSync(); cloudOn = false; setStatus("off");
+        showGate("famille"); render();
+        return;
+      }
+      var role = d.role || "parent";
+      if(moi.famille === d.famille && moi.role === role) return;
+      entrerDansLaFamille(user, d.famille, role);
+    },
+    function(err){
+      cloudOn = false;
+      cloudWhy = "impossible de lire ton compte (" + ((err && err.code) || "inconnu") + ")";
+      setStatus("off"); renderBanners();
+    }
+  );
+}
+
+function entrerDansLaFamille(user, famille, role){
+  moi = { famille: famille, role: role };
+  CFG.document = famille;
+  fb.base   = FBLIB.doc(fb.db, CFG.collection, famille);
+  readOnly  = (role !== "parent");
+
+  // On change de branche : on repart du cache local de CETTE famille.
+  stopSync();
+  LS       = LS_BASE + "/" + famille;
+  SEEN_KEY = SEEN_BASE + "/" + famille;
+  reglagesConnus = null;
+  reglagesEnAttente = false;
+  accesVerifie = false;
+  loadLocalState();
+
+  hideGate();
+  checkWriteAccess(user);
+  startSync();
+  suivreMembres(famille);
+  render();
+}
+
+function suivreMembres(famille){
+  if(fb.unsubMembres){ try{ fb.unsubMembres(); }catch(e){} fb.unsubMembres = null; }
+  fb.unsubMembres = FBLIB.onSnapshot(
+    FBLIB.collection(fb.db, "familles", famille, "membres"),
+    function(snap){
+      var out = [];
+      snap.forEach(function(d){ var v = d.data() || {}; v.uid = d.id; out.push(v); });
+      out.sort(function(a,b){ return (a.email || "") < (b.email || "") ? -1 : 1; });
+      MEMBRES = out;
+      if(UI.view === "settings") render();
+    },
+    function(){}
+  );
+}
+
+function nouvelIdFamille(){
+  return "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+var ALPHABET_CODE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";   // sans I, O, 0, 1 : illisibles
+function nouveauCode(){
+  var out = "";
+  for(var i = 0; i < 8; i++) out += ALPHABET_CODE[Math.floor(Math.random() * ALPHABET_CODE.length)];
+  return out;
+}
+
+function creerMaFamille(bouton, erreur){
+  var user = fb.user; if(!user) return;
+  var id = nouvelIdFamille();
+  if(bouton){ bouton.disabled = true; bouton.textContent = "Création…"; }
+  // La branche est d'abord réclamée avec le nom de son fondateur : c'est ce que
+  // les règles du serveur vérifieront pour accepter le tout premier membre.
+  FBLIB.setDoc(FBLIB.doc(fb.db, "familles", id), { fondateur: user.uid, at: nowISO() })
+    .then(function(){
+      return FBLIB.setDoc(FBLIB.doc(fb.db, "familles", id, "membres", user.uid),
+                          { email: user.email || "", role: "parent", at: nowISO() });
+    })
+    .then(function(){
+      return FBLIB.setDoc(FBLIB.doc(fb.db, "utilisateurs", user.uid),
+                          { famille: id, role: "parent", email: user.email || "", at: nowISO() });
+    })
+    .then(function(){
+      // le suivi d'appartenance prend le relais et lance l'assistant
+    })
+    .catch(function(err){
+      if(bouton){ bouton.disabled = false; bouton.textContent = "Créer ma famille"; }
+      if(erreur) erreur.textContent = "La création a échoué (" + ((err && err.code) || "erreur") + ").";
+    });
+}
+
+function rejoindreAvecCode(code, bouton, erreur){
+  var user = fb.user; if(!user) return;
+  code = String(code || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if(code.length !== 8){ if(erreur) erreur.textContent = "Un code compte 8 caractères."; return; }
+  if(bouton){ bouton.disabled = true; bouton.textContent = "Vérification…"; }
+  FBLIB.getDoc(FBLIB.doc(fb.db, "invitations", code))
+    .then(function(snap){
+      if(!snap.exists()) throw { code: "invitation-inconnue" };
+      var inv = snap.data() || {};
+      if(!inv.famille) throw { code: "invitation-incomplete" };
+      return FBLIB.setDoc(FBLIB.doc(fb.db, "familles", inv.famille, "membres", user.uid),
+                          { email: user.email || "", role: inv.role || "parent", code: code, at: nowISO() })
+        .then(function(){
+          return FBLIB.setDoc(FBLIB.doc(fb.db, "utilisateurs", user.uid),
+                              { famille: inv.famille, role: inv.role || "parent",
+                                email: user.email || "", at: nowISO() });
+        });
+    })
+    .catch(function(err){
+      if(bouton){ bouton.disabled = false; bouton.textContent = "Rejoindre"; }
+      if(!erreur) return;
+      var c = err && err.code;
+      erreur.textContent = (c === "invitation-inconnue")
+        ? "Ce code n'existe pas, ou il a été annulé."
+        : "Impossible de rejoindre cette famille (" + (c || "erreur") + ").";
+    });
+}
+
+function inviterQuelquun(role){
+  if(!moi.famille || readOnly) return;
+  var code = nouveauCode();
+  FBLIB.setDoc(FBLIB.doc(fb.db, "invitations", code),
+               { famille: moi.famille, role: role, par: meEmail() || "", at: nowISO() })
+    .then(function(){ montrerInvitation(code, role); })
+    .catch(function(err){ toast("L'invitation n'a pas pu être créée (" + ((err && err.code) || "erreur") + ")"); });
+}
+
+function montrerInvitation(code, role){
+  var quoi = (role === "parent")
+    ? "Le deuxième parent aura les mêmes droits que toi."
+    : "Ce compte pourra tout consulter, sans rien pouvoir modifier ni supprimer.";
+  openModal(
+    '<header><h3>Code d\'invitation</h3><p>' + esc(quoi) + '</p></header>' +
+    '<div class="content"><div class="codebox mono" id="codeaff">' + esc(code) + "</div>" +
+    '<p class="aide">La personne crée son compte sur la même adresse, choisit <b>Rejoindre une famille</b> ' +
+    'et saisit ce code. Il ne sert qu\'une fois par personne ; garde-le pour toi.</p>' +
+    '<div class="err" id="copieok"></div></div>' +
+    '<footer><button class="btn" id="copier">Copier</button>' +
+    '<button class="btn primary" id="ok">Fermer</button></footer>',
+    function(root){
+      root.querySelector("#ok").onclick = closeModal;
+      root.querySelector("#copier").onclick = function(){
+        try{
+          navigator.clipboard.writeText(code);
+          root.querySelector("#copieok").textContent = "Copié.";
+        }catch(e){
+          root.querySelector("#copieok").textContent = "Copie impossible : note-le à la main.";
+        }
+      };
+    }
+  );
+}
+
+/* ====================== MON COMPTE ET MES DONNÉES ====================
+   Trois portes de sortie, parce qu'on doit pouvoir partir :
+   quitter la famille, effacer la famille entière, supprimer son compte.
+   Rien n'est simulé : les documents sont réellement supprimés du serveur. */
+
+function suisSeulParent(){
+  var parents = MEMBRES.filter(function(m){ return m.role === "parent"; });
+  return parents.length <= 1;
+}
+
+function supprimerDocs(chemins){
+  var jobs = chemins.map(function(seg){
+    return FBLIB.deleteDoc(FBLIB.doc.apply(null, [fb.db].concat(seg))).catch(function(){});
+  });
+  return Promise.all(jobs);
+}
+
+/* Le contenu d'une famille : points, réserve, sanctions, semaines, et les
+   autres membres. Volontairement SANS le compte courant : c'est son propre
+   statut de parent qui autorise toutes ces suppressions. L'effacer en premier
+   reviendrait à se couper le bras avec lequel on travaille — le serveur
+   refuserait alors le reste, et la famille resterait à moitié effacée. */
+function cheminsDeLaFamille(fam){
+  var out = [], moiMeme = fb.user ? fb.user.uid : null;
+  LISTS.forEach(function(k){
+    (S[k] || []).forEach(function(it){
+      if(it && it.id) out.push(["familles", fam, COLS[k], it.id]);
+    });
+  });
+  MEMBRES.forEach(function(m){
+    if(!m.uid || m.uid === moiMeme) return;
+    out.push(["familles", fam, "membres", m.uid]);
+    out.push(["familles", fam, "presence", m.uid]);
+  });
+  return out;
+}
+
+/* L'effacement complet, dans l'ordre : le contenu d'abord, la famille ensuite,
+   et sa propre carte de membre en tout dernier. */
+async function effacerToutLaFamille(fam){
+  var uid = fb.user ? fb.user.uid : null;
+  await supprimerDocs(cheminsDeLaFamille(fam));
+  if(uid) await supprimerDocs([["familles", fam, "presence", uid]]);
+  await FBLIB.deleteDoc(FBLIB.doc(fb.db, "familles", fam)).catch(function(){});
+  if(uid) await supprimerDocs([["familles", fam, "membres", uid]]);
+}
+
+function oublierLaFamilleLocalement(){
+  moi = { famille:null, role:null };
+  MEMBRES = [];
+  // Une sauvegarde encore en attente recréerait la famille qu'on vient
+  // d'effacer : on coupe le minuteur et on débranche la cible.
+  clearTimeout(saveTimer);
+  saveTimer = null;
+  stopSync();
+  fb.base = null;
+  try{ localStorage.removeItem(LS); }catch(e){}
+  LS = LS_BASE; SEEN_KEY = SEEN_BASE;
+  S = migrate(clone(DEFAULTS));
+  reglagesConnus = null; reglagesEnAttente = false; accesVerifie = false;
+}
+
+async function quitterLaFamille(){
+  var user = fb.user; if(!user || !moi.famille) return;
+  if(moi.role === "parent" && suisSeulParent()){
+    toast("Tu es le seul parent : c'est la famille entière qu'il faut supprimer.");
+    return;
+  }
+  var ok = await confirmer(
+    "Quitter cette famille ?",
+    "Ton compte est retiré de la famille. Les points, l'historique et les réserves restent chez les autres membres. " +
+    "Tu pourras revenir plus tard avec un nouveau code d'invitation.",
+    "Quitter"
+  );
+  if(!ok) return;
+  var fam = moi.famille;
+  await supprimerDocs([["familles", fam, "membres", user.uid], ["familles", fam, "presence", user.uid]]);
+  await FBLIB.deleteDoc(FBLIB.doc(fb.db, "utilisateurs", user.uid)).catch(function(){});
+  oublierLaFamilleLocalement();
+  showGate("famille"); render();
+  toast("Tu as quitté la famille");
+}
+
+async function supprimerLaFamille(){
+  var user = fb.user; if(!user || !moi.famille || readOnly) return;
+  var nom = S.famille || "cette famille";
+  var ok = await confirmerAvecMot(
+    "Supprimer la famille " + nom + " ?",
+    "Tout disparaît définitivement : les enfants, tous les points et leurs explications, les réserves, " +
+    "les sanctions, les semaines archivées, et l'accès de chaque membre. Personne ne pourra revenir en arrière. " +
+    "Si tu veux en garder une trace, télécharge d'abord la sauvegarde.",
+    nom, "Tout supprimer"
+  );
+  if(!ok) return;
+  var pin = await requirePin("Le code parent est demandé pour supprimer la famille.", true);
+  if(!pin) return;
+
+  var fam = moi.famille;
+  toast("Suppression en cours…");
+  await effacerToutLaFamille(fam);
+  await FBLIB.deleteDoc(FBLIB.doc(fb.db, "utilisateurs", user.uid)).catch(function(){});
+  oublierLaFamilleLocalement();
+  showGate("famille"); render();
+  toast("La famille a été supprimée");
+}
+
+async function supprimerMonCompte(){
+  var user = fb.user; if(!user) return;
+  var seul = (moi.role === "parent" && suisSeulParent());
+  var ok = await confirmerAvecMot(
+    "Supprimer ton compte ?",
+    (seul
+      ? "Tu es le seul parent de cette famille : sa suppression entraîne celle de toutes ses données — " +
+        "enfants, points, réserves, historique. "
+      : "Ton compte est retiré de la famille ; ses données restent chez les autres membres. ") +
+    "Ton adresse et ton mot de passe sont effacés du service. C'est définitif.",
+    "SUPPRIMER", "Supprimer mon compte"
+  );
+  if(!ok) return;
+
+  if(moi.famille){
+    var fam = moi.famille;
+    if(seul){
+      await effacerToutLaFamille(fam);
+    } else {
+      await supprimerDocs([["familles", fam, "membres", user.uid], ["familles", fam, "presence", user.uid]]);
+    }
+    await FBLIB.deleteDoc(FBLIB.doc(fb.db, "utilisateurs", user.uid)).catch(function(){});
+  }
+  oublierLaFamilleLocalement();
+  arreterAppartenance();
+  try{
+    await FBLIB.deleteUser(user);
+    toast("Compte supprimé");
+  }catch(err){
+    if(err && err.code === "auth/requires-recent-login"){
+      await FBLIB.signOut(fb.auth).catch(function(){});
+      openModal(
+        '<header><h3>Reconnecte-toi une dernière fois</h3>' +
+        '<p>Tes données ont bien été effacées. Pour supprimer l\'adresse et le mot de passe eux-mêmes, ' +
+        'le service demande une connexion récente : reconnecte-toi, puis relance la suppression du compte. ' +
+        'C\'est une sécurité contre les suppressions faites depuis un téléphone laissé sans surveillance.</p></header>' +
+        '<footer><button class="btn primary" id="ok">J\'ai compris</button></footer>',
+        function(root){ root.querySelector("#ok").onclick = closeModal; });
+      return;
+    }
+    toast("La suppression du compte a échoué (" + ((err && err.code) || "erreur") + ")");
+  }
+}
+
+/* --- petites fenêtres de confirmation --- */
+function confirmer(titre, texte, motBouton){
+  return new Promise(function(resolve){
+    openModal(
+      '<header><h3>' + esc(titre) + '</h3><p>' + esc(texte) + '</p></header>' +
+      '<footer><button class="btn ghost" id="non">Annuler</button>' +
+      '<button class="btn danger" id="oui">' + esc(motBouton) + '</button></footer>',
+      function(root){
+        root.querySelector("#non").onclick = function(){ closeModal(); resolve(false); };
+        root.querySelector("#oui").onclick = function(){ closeModal(); resolve(true); };
+      });
+  });
+}
+function confirmerAvecMot(titre, texte, mot, motBouton){
+  return new Promise(function(resolve){
+    openModal(
+      '<header><h3>' + esc(titre) + '</h3><p>' + esc(texte) + '</p></header>' +
+      '<div class="content"><div class="field"><label for="confmot">Pour confirmer, écris <b>' + esc(mot) + '</b></label>' +
+      '<input class="input" id="confmot" data-autofocus autocomplete="off"></div>' +
+      '<div class="err" id="conferr"></div></div>' +
+      '<footer><button class="btn ghost" id="non">Annuler</button>' +
+      '<button class="btn danger" id="oui">' + esc(motBouton) + '</button></footer>',
+      function(root){
+        root.querySelector("#non").onclick = function(){ closeModal(); resolve(false); };
+        root.querySelector("#oui").onclick = function(){
+          var v = root.querySelector("#confmot").value.trim();
+          if(v.toLowerCase() !== String(mot).toLowerCase()){
+            root.querySelector("#conferr").textContent = "Ce n'est pas ce qui est demandé.";
+            return;
+          }
+          closeModal(); resolve(true);
+        };
+      });
+  });
+}
+
+/* --- ce que l'application enregistre --- */
+function pageDonnees(){
+  openModal(
+    '<header><h3>Ce que l\'application enregistre</h3>' +
+    '<p>En clair, sans détour.</p></header>' +
+    '<div class="content" style="max-height:60vh;overflow:auto">' +
+      '<h4 style="margin:0 0 6px">Ce qui est enregistré</h4>' +
+      '<p class="aide">L\'adresse e-mail de chaque compte. Le nom que la famille se donne. Le prénom de chaque ' +
+      'enfant, et sa date de naissance si elle est renseignée. Chaque point, avec son explication, sa date et ' +
+      'le nom de la personne qui l\'a mis. Les réserves, les sanctions, les axes et les semaines archivées.</p>' +
+      '<h4 style="margin:14px 0 6px">Où</h4>' +
+      '<p class="aide">Sur Google Cloud Firestore, dans des centres de données <b>situés en Europe</b>. ' +
+      'Chaque famille a son espace : personne ne peut lire celui d\'une autre, et c\'est le serveur qui l\'empêche.</p>' +
+      '<h4 style="margin:14px 0 6px">Combien de temps</h4>' +
+      '<p class="aide">Tant que la famille garde son compte. La suppression est immédiate et définitive dès ' +
+      'qu\'elle est demandée depuis Réglages.</p>' +
+      '<h4 style="margin:14px 0 6px">Ce qui n\'est pas fait</h4>' +
+      '<p class="aide">Aucune publicité, aucun traceur, aucune revente, aucun partage avec qui que ce soit. ' +
+      'Les données ne servent qu\'à faire fonctionner le tableau de la famille.</p>' +
+      '<h4 style="margin:14px 0 6px">Tes droits</h4>' +
+      '<p class="aide">Tu peux à tout moment consulter tes données (elles sont toutes à l\'écran), les corriger, ' +
+      'les exporter (Réglages → Sauvegarde) et les supprimer (Réglages → Mon compte). ' +
+      'Pour toute question : <b>clementpernin@hotmail.com</b>.</p>' +
+      '<h4 style="margin:14px 0 6px">Une précision honnête</h4>' +
+      '<p class="aide">Ce sont des données concernant des enfants. Elles ne sortent pas de la famille, mais ' +
+      'elles existent : n\'écris dans les explications que ce que tu accepterais de relire à voix haute avec eux.</p>' +
+    "</div>" +
+    '<footer><button class="btn primary" id="ok">Fermer</button></footer>',
+    function(root){ root.querySelector("#ok").onclick = closeModal; }
+  );
+}
+
+/* ====================== SOUTENIR L'APPLICATION ======================
+   Un mot, une fois, au troisième jour — quand la famille a eu le temps de
+   voir si l'application lui sert — puis un rappel à trois mois. Qui a
+   cliqué sur « Faire un don » n'est plus jamais relancé. */
+var DON_URL = "https://pay.sumup.com/b2c/QV2QOSWZ";
+var DON_CLE = "trophee/don";
+
+function donEtat(){
+  try{ return JSON.parse(localStorage.getItem(DON_CLE)) || {}; }catch(e){ return {}; }
+}
+function donEcrire(o){
+  try{ localStorage.setItem(DON_CLE, JSON.stringify(o)); }catch(e){}
+}
+function joursDepuis(iso){
+  if(!iso) return 0;
+  var d = (Date.now() - new Date(iso).getTime()) / 86400000;
+  return isFinite(d) ? d : 0;
+}
+
+function donBandeHTML(){
+  if(!MULTI) return "";
+  return '<div class="don-bande"><span class="don-texte">' +
+         '<span aria-hidden="true">💙</span> Gratuite, et elle le restera.</span> ' +
+         '<a href="' + DON_URL + '" target="_blank" rel="noopener" data-don="bande">' +
+         "Soutenir l'application →</a></div>";
+}
+
+function ouvrirDon(origine){
+  var e = donEtat();
+  e.donne = 1; e.vu = nowISO();
+  donEcrire(e);
+  try{ window.open(DON_URL, "_blank", "noopener"); }catch(err){ location.href = DON_URL; }
+}
+
+function fenetreDon(){
+  var e = donEtat();
+  e.vu = nowISO();
+  donEcrire(e);
+  openModal(
+    '<header><h3><span aria-hidden="true">💙</span> Un mot, et je vous laisse</h3></header>' +
+    '<div class="content dontxt">' +
+      "<p><b>L'application est entièrement gratuite, et si vous souhaitez qu'elle le reste…</b></p>" +
+      '<p>Un petit don sera toujours le bienvenu <span aria-hidden="true">😇</span></p>' +
+      "<p>Chaque contribution, même symbolique, aide à la faire vivre et à améliorer l'app " +
+      '<span aria-hidden="true">😊</span></p>' +
+      '<p>Merci pour votre soutien ! <span aria-hidden="true">💕</span></p>' +
+    "</div>" +
+    '<footer><button class="btn ghost" id="don-plus-tard">Plus tard</button>' +
+    '<button class="btn primary" id="don-oui">Faire un don</button></footer>',
+    function(root){
+      root.querySelector("#don-plus-tard").onclick = closeModal;
+      root.querySelector("#don-oui").onclick = function(){ closeModal(); ouvrirDon("fenetre"); };
+    }
+  );
+}
+
+var donEssais = 0;
+function peutEtreLeDon(){
+  if(!MULTI || !fb.user || readOnly) return;
+  if(!configurationFaite()) return;
+
+  var e = donEtat();
+  if(e.donne) return;
+  if(!e.premier){ e.premier = nowISO(); donEcrire(e); return; }
+  var du = !e.vu ? (joursDepuis(e.premier) >= 3) : (joursDepuis(e.vu) >= 90);
+  if(!du) return;
+
+  // On ne surgit jamais au milieu de quelque chose : ni par-dessus une autre
+  // fenêtre, ni pendant qu'on saisit, ni ailleurs que sur le tableau. Sinon on
+  // repasse plus tard — un appel au don qui interrompt est un appel raté.
+  var occupe = document.querySelector(".modal") || saisieEnCours() || UI.view !== "home";
+  if(occupe){
+    if(donEssais++ < 6) setTimeout(peutEtreLeDon, 25000);
+    return;
+  }
+  fenetreDon();
+}
+
+function askMyName(){
+
+
+  var mail = meEmail();
+  if(!mail || readOnly) return;
+  if(S.parentNames && S.parentNames[mail]) return;
+  openModal(
+    '<header><h3>Comment veux-tu apparaître ?</h3>' +
+    '<p>Ce nom s\'affiche à côté de chaque point que tu attribues : « −1 — chambre en désordre <b>par Papa</b> ».</p></header>' +
+    '<div class="content">' +
+      '<div class="field"><label for="mn">Ton nom</label><input class="input" id="mn" data-autofocus placeholder="Papa"></div>' +
+      '<div class="presets"><button type="button" class="preset">Papa</button><button type="button" class="preset">Maman</button></div>' +
+    "</div>" +
+    '<footer><button class="btn primary" id="ok" style="width:100%">Enregistrer</button></footer>',
+    function(root){
+      var champ = root.querySelector("#mn");
+      root.querySelectorAll(".preset").forEach(function(b){ b.onclick = function(){ champ.value = b.textContent; champ.focus(); }; });
+      root.querySelector("#ok").onclick = function(){
+        var val = champ.value.trim();
+        if(val.length < 2){ champ.focus(); champ.style.borderColor = "var(--dang)"; return; }
+        S.parentNames[mail] = val;
+        closeModal(); touch(); toast("Enregistré — tu apparaîtras comme « " + val + " »");
+      };
+    }
+  );
+}
+
+/* ====================== CONNEXION ====================== */
+function authMessage(code){
+  if(code === "auth/invalid-credential" || code === "auth/wrong-password" || code === "auth/user-not-found")
+    return "E-mail ou mot de passe incorrect.";
+  if(code === "auth/invalid-email")          return "Cette adresse e-mail n'est pas valide.";
+  if(code === "auth/user-disabled")          return "Ce compte a été désactivé dans Firebase.";
+  if(code === "auth/too-many-requests")      return "Trop de tentatives. Réessaie dans quelques minutes.";
+  if(code === "auth/network-request-failed") return "Pas de connexion Internet.";
+  if(code === "auth/operation-not-allowed")  return "La connexion par e-mail n'est pas activée dans Firebase.";
+  if(code === "auth/email-already-in-use")   return "Un compte existe déjà avec cette adresse. Connecte-toi.";
+  if(code === "auth/weak-password")          return "Mot de passe trop court : six caractères au minimum.";
+  if(code === "auth/missing-password")       return "Il manque le mot de passe.";
+  return "Connexion impossible (" + (code || "erreur inconnue") + ").";
+}
+function hideGate(){
+  var g = el("gate"); if(g) g.hidden = true;
+  document.body.style.overflow = "";
+}
+function showGate(kind){
+  var g = el("gate"); if(!g) return;
+  g.hidden = false;
+  document.body.style.overflow = "hidden";
+  if(kind === "essai"){
+    var dejaDesDonnees = !!(S && S.children && S.children.length);
+    g.innerHTML = '<div class="gatecard">' + GATE_LOGO +
+      '<h1>Version d\'essai</h1>' +
+      '<p>De quoi faire le tour de l\'application sans rien installer. ' +
+      'Tout reste <b>sur cet appareil, dans ce navigateur</b> : rien n\'est envoyé nulle part, ' +
+      'et rien n\'est partagé avec un autre téléphone.</p>' +
+      '<button class="btn primary" id="gate-essai" style="width:100%">' +
+      (dejaDesDonnees ? "Reprendre l\'essai" : "Commencer") + '</button>' +
+      (dejaDesDonnees ? '<button class="btn" id="gate-raz" style="width:100%;margin-top:10px">Tout effacer et recommencer</button>' : "") +
+      '<p class="gatefoot">Pour de vrai, à plusieurs et synchronisé entre les téléphones, ' +
+      'il faut l\'installer avec son propre compte : le mode d\'emploi est dans le dossier.</p></div>';
+    el("gate-essai").onclick = function(){
+      hideGate(); setTimeout(function(){ verifierConfiguration(true); }, 250);
+    };
+    var raz = el("gate-raz");
+    if(raz) raz.onclick = function(){
+      try{ localStorage.removeItem(LS); }catch(e){}
+      location.reload();
+    };
+    return;
+  }
+  if(kind === "famille"){
+    g.innerHTML = '<div class="gatecard">' + GATE_LOGO +
+      '<h1>Ta famille</h1>' +
+      '<p>Ton compte est créé. Reste à savoir si tu ouvres un nouveau tableau, ou si tu rejoins celui ' +
+      'que quelqu\'un a déjà commencé.</p>' +
+      '<button class="btn primary" id="fam-new" style="width:100%">Créer ma famille</button>' +
+      '<div class="ouseparateur"><span>ou</span></div>' +
+      '<form id="fam-join" autocomplete="off">' +
+        '<div class="field"><label for="fam-code">Code d\'invitation</label>' +
+        '<input class="input mono" id="fam-code" maxlength="9" placeholder="ABCD2345" autocapitalize="characters"></div>' +
+        '<button class="btn" id="fam-go" type="submit" style="width:100%">Rejoindre</button>' +
+      "</form>" +
+      '<div class="err" id="fam-err"></div>' +
+      '<p class="gatefoot"><button class="lien" id="fam-out">Se déconnecter</button><br>' +
+      '<button class="lien" id="fam-donnees">Ce que l\'application enregistre</button><br>' +
+      '<button class="lien" id="fam-supp">Supprimer mon compte</button></p></div>';
+    var errF = el("fam-err");
+    el("fam-new").onclick = function(){ errF.textContent = ""; creerMaFamille(el("fam-new"), errF); };
+    el("fam-join").onsubmit = function(e){
+      e.preventDefault(); errF.textContent = "";
+      rejoindreAvecCode(el("fam-code").value, el("fam-go"), errF);
+    };
+    el("fam-out").onclick = function(){ FBLIB.signOut(fb.auth); };
+    el("fam-donnees").onclick = pageDonnees;
+    // Quelqu'un qui a quitté sa famille doit pouvoir effacer son compte aussi.
+    el("fam-supp").onclick = supprimerMonCompte;
+    return;
+  }
+  if(kind === "signup"){
+    g.innerHTML = '<div class="gatecard">' + GATE_LOGO +
+      '<h1>Créer un compte</h1>' +
+      '<p>Une adresse e-mail et un mot de passe : c\'est tout ce qui est demandé.</p>' +
+      '<form id="suform" autocomplete="on">' +
+        '<div class="field"><label for="sumail">E-mail</label>' +
+        '<input class="input" type="email" id="sumail" autocomplete="username" required data-autofocus></div>' +
+        '<div class="field"><label for="supw">Mot de passe</label>' +
+        '<input class="input" type="password" id="supw" autocomplete="new-password" required minlength="6"></div>' +
+        '<div class="err" id="suerr"></div>' +
+        '<button class="btn primary" id="subtn" type="submit" style="width:100%">Créer le compte</button>' +
+      "</form>" +
+      '<p class="gatefoot">Déjà un compte ? <button class="lien" id="su-back">Se connecter</button></p></div>';
+    el("su-back").onclick = function(){ showGate("login"); };
+    el("suform").onsubmit = function(e){
+      e.preventDefault();
+      var b = el("subtn"), errn = el("suerr");
+      b.disabled = true; b.textContent = "Création…"; errn.textContent = "";
+      FBLIB.createUserWithEmailAndPassword(fb.auth, el("sumail").value.trim(), el("supw").value)
+        .then(function(res){
+          // On envoie tout de suite le message de confirmation. L'accès n'est pas
+          // bloqué : un message qui tombe dans les indésirables ne doit pas
+          // empêcher une famille de s'en servir le soir même.
+          try{ FBLIB.sendEmailVerification(res.user).catch(function(){}); }catch(e){}
+        })
+        .catch(function(err){
+          b.disabled = false; b.textContent = "Créer le compte";
+          errn.textContent = authMessage(err && err.code);
+        });
+    };
+    return;
+  }
+  if(kind === "config"){
+    g.innerHTML = '<div class="gatecard">' + GATE_LOGO +
+      '<h1>Presque prêt</h1>' +
+      '<p>Le fichier <code>config.js</code> ne contient pas encore les clés Firebase. ' +
+      'Ouvre-le, colle le bloc que Firebase t\'a donné, et redépose le dossier.</p>' +
+      '<p class="gatefoot">En attendant, les points saisis ici restent sur cet appareil uniquement.</p>' +
+      '<button class="btn" id="gate-skip">Utiliser quand même sur cet appareil</button></div>';
+    el("gate-skip").onclick = function(){ hideGate(); setTimeout(function(){ verifierConfiguration(true); }, 300); };
+    return;
+  }
+  g.innerHTML = '<div class="gatecard">' + GATE_LOGO +
+    '<h1>' + esc(titreApp()) + '</h1>' +
+    '<p>Connecte-toi avec ton e-mail de parent pour retrouver les points de la semaine.</p>' +
+    '<form id="loginform" autocomplete="on">' +
+      '<div class="field"><label for="mail">E-mail</label>' +
+      '<input class="input" type="email" id="mail" autocomplete="username" required data-autofocus></div>' +
+      '<div class="field"><label for="pw">Mot de passe</label>' +
+      '<input class="input" type="password" id="pw" autocomplete="current-password" required></div>' +
+      '<div class="err" id="loginerr"></div>' +
+      '<button class="btn primary" id="loginbtn" type="submit" style="width:100%">Se connecter</button>' +
+    '</form>' +
+    (MULTI
+      ? '<p class="gatefoot">Pas encore de compte ? <button class="lien" id="go-signup">En créer un</button><br>' +
+        '<button class="lien" id="go-reset">Mot de passe oublié</button><br>' +
+        '<button class="lien" id="go-donnees">Ce que l\'application enregistre</button></p></div>'
+      : '<p class="gatefoot">Une seule connexion par appareil : tu restes connecté ensuite.</p></div>');
+  var lienS = el("go-signup");
+  if(lienS) lienS.onclick = function(){ showGate("signup"); };
+  var lienD = el("go-donnees");
+  if(lienD) lienD.onclick = pageDonnees;
+  var lienR = el("go-reset");
+  if(lienR) lienR.onclick = function(){
+    var mail = (el("mail").value || "").trim();
+    var errn = el("loginerr");
+    if(!mail){ errn.textContent = "Écris d'abord ton adresse, puis reclique."; el("mail").focus(); return; }
+    FBLIB.sendPasswordResetEmail(fb.auth, mail)
+      .then(function(){ errn.textContent = "Un message vient de partir vers " + mail + "."; })
+      .catch(function(err){ errn.textContent = authMessage(err && err.code); });
+  };
+  var f = el("loginform");
+  f.onsubmit = function(e){
+    e.preventDefault();
+    var btn = el("loginbtn"), errn = el("loginerr");
+    btn.disabled = true; btn.textContent = "Connexion…"; errn.textContent = "";
+    FBLIB.signInWithEmailAndPassword(fb.auth, el("mail").value.trim(), el("pw").value)
+      .catch(function(err){
+        errn.textContent = authMessage(err && err.code);
+        btn.disabled = false; btn.textContent = "Se connecter";
+      });
+  };
+  setTimeout(function(){ var m = el("mail"); if(m) m.focus(); }, 60);
+}
+function logout(){
+  stopSync();
+  FBLIB.signOut(fb.auth).catch(function(){});
+}
+
+/* ====================== SAUVEGARDE ====================== */
+function setStatus(kind){
+  var n = el("status"); if(!n) return;
+  var dot = n.querySelector(".dot"), txt = n.querySelector("span");
+  if(readOnly){ dot.className = "dot"; txt.textContent = "Mode lecture"; return; }
+  dot.className = "dot" + (kind === "saving" ? " saving" : kind === "off" ? " off" : "");
+  txt.textContent = kind === "saving" ? "Enregistrement…"
+                  : kind === "saved"  ? "Synchronisé"
+                  : kind === "slow"   ? "Hors ligne — sera envoyé"
+                  : "Cet appareil seulement";
+}
+function persistLocal(){
+  try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){}
+}
+/* Un réglage modifié ici n'est pas encore parti sur le serveur : pendant ce
+   court instant, le serveur a une version périmée. Sans ce drapeau, un écho
+   d'écriture arrivé entre-temps réappliquerait l'ancien réglage par-dessus le
+   nouveau — et la modification serait perdue sans que personne le voie. */
+var reglagesEnAttente = false;
+
+/* Dernière version des réglages que ce téléphone sait partagée avec le serveur.
+   Elle sert à n'écrire le document des réglages QUE s'il a vraiment changé ici.
+   Sans cela, chaque point coché réécrivait les réglages tels que cet appareil
+   les connaît — et un parent qui cochait un point pendant que l'autre modifiait
+   un seuil remettait l'ancien seuil, sans que personne ne s'en aperçoive. */
+var reglagesConnus = null;
+
+/* L'empreinte ignore l'horodatage : sans cela, le simple fait de cocher un point
+   changerait la signature et provoquerait une réécriture inutile des réglages. */
+function signatureReglages(s){
+  var o = settingsOf(s);
+  delete o.updatedAt;
+  delete o.rev;
+  return JSON.stringify(o);
+}
+
+/* Les réglages portent un numéro de version, incrémenté à chaque vraie
+   modification. C'est lui qui tranche quand deux versions se croisent :
+   une version plus ancienne que la nôtre est du passé et n'est jamais
+   réappliquée — qu'elle vienne d'un écho tardif du serveur ou d'un autre
+   téléphone dont l'horloge avance. Un horodatage ne suffirait pas : il
+   change aussi quand on coche un simple point. */
+var sigLocale = null;
+function noterSignature(){ sigLocale = signatureReglages(S); }
+
+function touch(){
+  S.updatedAt = nowISO();
+  var sig = signatureReglages(S);
+  if(sigLocale !== null && sig !== sigLocale) S.rev = (S.rev || 0) + 1;
+  sigLocale = sig;
+  reglagesEnAttente = true;
+  persistLocal();
+  queueSave();
+  render();
+}
+function queueSave(now){
+  if(readOnly){ return; }
+  if(!fb.user){ setStatus("off"); return; }
+  setStatus("saving");
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, now ? 150 : 700);
+}
+function doSave(){
+  if(!fb.user || !fb.base || !CFG){ setStatus("off"); return; }
+  clearTimeout(slowTimer);
+  slowTimer = setTimeout(function(){ setStatus("slow"); }, 6000);
+
+  var jobs = [], touched = [];
+  LISTS.forEach(function(k){
+    S[k].forEach(function(it){
+      if(!it || !it.id) return;
+      var sig = JSON.stringify(it);
+      if(savedSig[k][it.id] === sig) return;
+      savedSig[k][it.id] = sig;
+      touched.push([k, it.id]);
+      jobs.push(FBLIB.setDoc(FBLIB.doc(fb.db, CFG.collection, CFG.document, COLS[k], it.id), it));
+    });
+  });
+  var envoye = JSON.stringify(settingsOf(S));
+  var signature = signatureReglages(S);
+  var ecrireReglages = (signature !== reglagesConnus);
+  if(ecrireReglages){
+    jobs.push(FBLIB.setDoc(fb.base, {
+      json: envoye, updatedAt: nowISO(), by: fb.user.email || ""
+    }));
+  }
+
+  Promise.all(jobs).then(function(){
+    clearTimeout(slowTimer);
+    // On ne relâche la garde que si rien n'a bougé depuis l'envoi.
+    if(signatureReglages(S) === signature){
+      if(ecrireReglages) reglagesConnus = signature;
+      reglagesEnAttente = false;
+    }
+    cloudOn = true; setStatus("saved"); renderBanners();
+  }).catch(function(err){
+    reglagesEnAttente = false;
+    clearTimeout(slowTimer);
+    touched.forEach(function(t){ delete savedSig[t[0]][t[1]]; });   // à renvoyer au prochain essai
+    cloudOn = false;
+    cloudWhy = "Firebase a refusé l'écriture (" + ((err && err.code) || "inconnu") + ")";
+    setStatus("off"); renderBanners();
+  });
+}
+
+/* ====================== TOASTS ====================== */
+function toast(msg, undoFn){
+  var host = el("toast");
+  while(host.children.length >= 2) host.removeChild(host.firstChild);
+  var d = document.createElement("div");
+  d.className = "toast";
+  d.innerHTML = "<span>" + esc(msg) + "</span>";
+  if(undoFn){
+    var b = document.createElement("button");
+    b.textContent = "Annuler";
+    b.onclick = function(){ undoFn(); d.remove(); };
+    d.appendChild(b);
+  }
+  host.appendChild(d);
+  setTimeout(function(){ d.remove(); }, undoFn ? 7000 : 3200);
+}
+
+/* ====================== MODALES ====================== */
+function closeModal(){
+  // L'assistant de première ouverture ne se referme pas par mégarde :
+  // tant qu'il n'a pas abouti, l'application n'a pas de quoi fonctionner.
+  if(assistantOuvert) return;
+  el("modal-root").innerHTML = "";
+}
+function openModal(html, onMount){
+  var root = el("modal-root");
+  root.innerHTML = '<div class="backdrop"><div class="modal" role="dialog" aria-modal="true">' + html + "</div></div>";
+  var bd = root.querySelector(".backdrop");
+  bd.addEventListener("mousedown", function(e){ if(e.target === bd) closeModal(); });
+  document.addEventListener("keydown", escOnce);
+  if(onMount) onMount(root);
+  var f = root.querySelector("[data-autofocus]");
+  if(f) setTimeout(function(){ f.focus(); }, 40);
+}
+function escOnce(e){
+  if(e.key === "Escape"){ closeModal(); document.removeEventListener("keydown", escOnce); }
+}
+
+/* --- PIN --- */
+function isUnlocked(){
+  var t = parseInt(sessionStorage.getItem(UNLOCK) || "0", 10);
+  return t && Date.now() < t;
+}
+function markUnlocked(){
+  try{ sessionStorage.setItem(UNLOCK, String(Date.now() + UNLOCK_MS)); }catch(e){}
+}
+function refuseLecture(){
+  toast("Compte en lecture seule : les points ne se modifient pas d'ici");
+  return false;
+}
+function requirePin(reason, force){
+  return new Promise(function(resolve){
+    if(readOnly){ refuseLecture(); resolve(false); return; }
+    if(!S.pinEnabled && !force){ resolve(true); return; }
+    if(isUnlocked()){ resolve(true); return; }
+    var buf = "";
+    openModal(
+      '<header><h3>Code parent</h3><p>' + esc(reason || "Le code à 4 chiffres est demandé pour modifier les points.") + '</p></header>' +
+      '<div class="content">' +
+        '<div class="pindots" id="pd"><i></i><i></i><i></i><i></i></div>' +
+        '<div class="err" id="pinerr"></div>' +
+        '<div class="pinpad" id="pinpad">' +
+          [1,2,3,4,5,6,7,8,9].map(function(n){ return '<button type="button" data-k="'+n+'">'+n+'</button>'; }).join("") +
+          '<button type="button" data-k="del">←</button><button type="button" data-k="0">0</button>' +
+          '<button type="button" data-k="cancel">Annuler</button>' +
+        '</div>' +
+      '</div>',
+      function(root){
+        function paint(){
+          var dots = root.querySelectorAll("#pd i");
+          for(var i=0;i<4;i++) dots[i].className = i < buf.length ? "on" : "";
+        }
+        root.querySelector("#pinpad").addEventListener("click", function(e){
+          var b = e.target.closest("button[data-k]"); if(!b) return;
+          var k = b.getAttribute("data-k");
+          if(k === "cancel"){ closeModal(); resolve(false); return; }
+          if(k === "del"){ buf = buf.slice(0,-1); paint(); return; }
+          if(buf.length < 4){ buf += k; paint(); }
+          if(buf.length === 4){
+            if(buf === String(S.pin)){ markUnlocked(); closeModal(); resolve(true); }
+            else{
+              root.querySelector("#pinerr").textContent = "Code incorrect";
+              buf = ""; setTimeout(paint, 120);
+            }
+          }
+        });
+        document.addEventListener("keydown", function kb(e){
+          if(!document.body.contains(root.querySelector(".backdrop"))){ document.removeEventListener("keydown", kb); return; }
+          if(/^[0-9]$/.test(e.key)){ root.querySelector('[data-k="'+e.key+'"]').click(); }
+          if(e.key === "Backspace"){ root.querySelector('[data-k="del"]').click(); }
+        });
+      }
+    );
+  });
+}
+
+/* --- Ajout de point --- */
+async function addPoint(childId, delta){
+  var ok = await requirePin();
+  if(!ok) return;
+  var c = child(childId);
+  var list = delta > 0 ? S.presets.good : S.presets.bad;
+  openModal(
+    '<header><h3>' + (delta > 0 ? "Bonne action" : "Bêtise") + " — " + esc(c.name) + '</h3>' +
+    '<p>Note ce qui s\'est passé : la liste sera relue ensemble à la réunion du vendredi.</p></header>' +
+    '<div class="content">' +
+      '<div class="field"><label for="note">Explication</label>' +
+      '<textarea class="input" id="note" data-autofocus placeholder="Ex : a aidé à débarrasser sans qu\'on demande"></textarea></div>' +
+      '<div class="presets">' + list.map(function(p){ return '<button type="button" class="preset">' + esc(p) + "</button>"; }).join("") + "</div>" +
+      '<div class="field"><label for="when">Quand ?</label><input class="input" type="date" id="when" value="' + todayISO() + '" max="' + todayISO() + '"></div>' +
+    '</div>' +
+    '<footer><button class="btn ghost" id="cancel">Annuler</button>' +
+    '<button class="btn primary" id="ok">' + (delta > 0 ? "+1 point" : "−1 point") + "</button></footer>",
+    function(root){
+      var ta = root.querySelector("#note");
+      root.querySelectorAll(".preset").forEach(function(b){
+        b.onclick = function(){ ta.value = b.textContent; ta.focus(); };
+      });
+      root.querySelector("#cancel").onclick = closeModal;
+      root.querySelector("#ok").onclick = function(){
+        var note = ta.value.trim();
+        if(note.length < 2){ ta.focus(); ta.style.borderColor = "var(--dang)"; return; }
+        var d = root.querySelector("#when").value || todayISO();
+        var at = (d === todayISO()) ? nowISO() : d + "T20:00:00.000Z";
+        if(!S.weekStart) S.weekStart = nowISO();
+        var ev = { id: uid(), child: childId, delta: delta, note: note, at: at,
+                   week: S.weekStart, by: meEmail(), deleted: false };
+        S.events.push(ev);
+        closeModal();
+        touch();
+        var total = scoreOf(childId);
+        var extra = "";
+        if(total <= S.thresholds.punish) extra = " — zone rouge !";
+        else if(total <= S.thresholds.warn) extra = " — zone orange";
+        toast(c.name + " : " + (delta > 0 ? "+1" : "−1") + " (total " + sgn(total) + ")" + extra, function(){
+          var t = S.events.filter(function(x){ return x.id === ev.id; })[0];
+          if(t){ t.deleted = true; touch(); }
+        });
+      };
+    }
+  );
+}
+
+function editEvent(id){
+  var t = S.events.filter(function(x){ return x.id === id; })[0];
+  if(!t) return;
+  var list = t.delta > 0 ? S.presets.good : S.presets.bad;
+  openModal(
+    '<header><h3>Modifier — ' + esc(nameOf(t.child)) + '</h3>' +
+    '<p>Corrige l\'explication, la date, ou transforme un + en − et inversement.</p></header>' +
+    '<div class="content">' +
+      '<div class="field"><label>Sens</label><div class="choices" style="margin-top:0">' +
+      '<button class="choice" data-sens="1" aria-pressed="' + (t.delta > 0) + '"><b>+ Bonne action</b></button>' +
+      '<button class="choice" data-sens="-1" aria-pressed="' + (t.delta < 0) + '"><b>− Bêtise</b></button>' +
+      "</div></div>" +
+      '<div class="field"><label for="enote">Explication</label>' +
+      '<textarea class="input" id="enote" data-autofocus>' + esc(t.note) + "</textarea></div>" +
+      '<div class="presets">' + list.map(function(x){ return '<button type="button" class="preset">' + esc(x) + "</button>"; }).join("") + "</div>" +
+      '<div class="field"><label for="edate">Quand ?</label><input class="input" type="date" id="edate" value="' + esc(dateOnly(t.at)) + '" max="' + todayISO() + '"></div>' +
+      '<div class="field"><label for="eby">Attribué par</label><select class="input" id="eby">' +
+        '<option value=""' + (t.by ? "" : " selected") + ">— non renseigné —</option>" +
+        auteursConnus(t.by).map(function(a){
+          return '<option value="' + esc(a.mail) + '"' + (a.mail === t.by ? " selected" : "") + ">" + esc(a.nom) + "</option>";
+        }).join("") +
+      "</select></div>" +
+    "</div>" +
+    '<footer><button class="btn ghost" id="cancel">Annuler</button>' +
+    '<button class="btn primary" id="ok">Enregistrer</button></footer>',
+    function(root){
+      var sens = t.delta > 0 ? 1 : -1;
+      function peindre(){
+        root.querySelectorAll("[data-sens]").forEach(function(b){
+          b.setAttribute("aria-pressed", String(parseInt(b.getAttribute("data-sens"), 10) === sens));
+        });
+      }
+      root.querySelectorAll("[data-sens]").forEach(function(b){
+        b.onclick = function(){ sens = parseInt(b.getAttribute("data-sens"), 10); peindre(); };
+      });
+      var ta = root.querySelector("#enote");
+      root.querySelectorAll(".preset").forEach(function(b){ b.onclick = function(){ ta.value = b.textContent; ta.focus(); }; });
+      root.querySelector("#cancel").onclick = closeModal;
+      root.querySelector("#ok").onclick = async function(){
+        var note = ta.value.trim();
+        if(note.length < 2){ ta.focus(); ta.style.borderColor = "var(--dang)"; return; }
+        var d = root.querySelector("#edate").value || dateOnly(t.at);
+        var auteur = root.querySelector("#eby").value || "";   // à lire AVANT de fermer
+        closeModal();
+        var ok = await requirePin("Le code parent est demandé pour modifier une ligne.", true);
+        if(!ok) return;
+        var cur = S.events.filter(function(x){ return x.id === id; })[0];
+        if(!cur) return;
+        cur.note = note;
+        cur.delta = sens;
+        cur.by = auteur;
+        if(d !== dateOnly(cur.at)) cur.at = (d === todayISO()) ? nowISO() : d + "T20:00:00.000Z";
+        cur.modifiedBy = meEmail();
+        cur.modifiedAt = nowISO();
+        touch();
+        toast("Ligne modifiée");
+      };
+    }
+  );
+}
+
+function removeEvent(id){
+  var t = S.events.filter(function(x){ return x.id === id; })[0];
+  if(!t) return;
+  openModal(
+    '<header><h3>Supprimer cette ligne ?</h3>' +
+    '<p>Elle disparaîtra du total de la semaine et de la réunion du vendredi. C\'est sans retour.</p></header>' +
+    '<div class="content"><div class="feedrow" style="border:1px solid var(--line);border-radius:var(--r-m)">' +
+      '<div class="delta ' + (t.delta > 0 ? "p" : "m") + '">' + (t.delta > 0 ? "+1" : "−1") + "</div>" +
+      '<div class="body"><div class="when"><b>' + esc(nameOf(t.child)) + "</b> · " + fWhen(t.at) + "</div>" +
+      '<div class="note">' + (t.delta > 0 ? "+1" : "−1") + " — " + esc(t.note) +
+      (t.by ? ' <span class="par">par ' + esc(whoName(t.by)) + "</span>" : "") + "</div></div></div></div>" +
+    '<footer><button class="btn ghost" id="cancel">Garder</button>' +
+    '<button class="btn danger" id="ok">Supprimer</button></footer>',
+    function(root){
+      root.querySelector("#cancel").onclick = closeModal;
+      root.querySelector("#ok").onclick = async function(){
+        closeModal();
+        var ok = await requirePin("Le code parent est demandé pour supprimer une ligne.", true);
+        if(!ok) return;
+        var cur = S.events.filter(function(x){ return x.id === id; })[0];
+        if(cur){ cur.deleted = true; touch(); toast("Ligne supprimée"); }
+      };
+    }
+  );
+}
+
+/* --- Cagnotte : écran détaillé --- */
+function cagLog(childId){
+  return S.cagnotteLog.filter(function(l){ return !l.deleted && l.child === childId; })
+                      .sort(function(a,b){ return a.at < b.at ? 1 : -1; });
+}
+function cagKindLabel(l){
+  if(l.kind === "bonus") return "Ajout exceptionnel";
+  if(l.kind === "achat") return "Achat déduit";
+  return l.delta >= 0 ? "Réunion du vendredi" : "Retrait";
+}
+function openCagnotte(childId, form){
+  var c = child(childId);
+  var solde = cagnotteOf(childId);
+  var log = cagLog(childId);
+  var h = "";
+
+  h += '<header><h3>' + esc(nomCagnotte()) + ' — ' + esc(c.name) + '</h3>' +
+       '<p>La réserve de ' + esc(c.name) + '. Elle se remplit à la réunion (' +
+       fMontant(S.palierValue) + ' dès que la semaine est positive, ' + fMontant(S.palierValue) +
+       ' de plus par palier de ' + S.palier + ' points) et par les ajouts exceptionnels.</p></header>';
+  h += '<div class="content">';
+
+  h += '<div class="cagsum"><div><div class="eyebrow">Solde du porte-monnaie</div>' +
+       '<div class="cagbig mono">' + solde + ' <small>' + esc(U()) + '</small></div></div>' +
+       '<div class="cagright"><div class="cagnext">' + log.length + ' mouvement' + (log.length > 1 ? "s" : "") + '</div></div></div>';
+
+  if(readOnly){
+    h += '<p style="font-size:.85rem;color:var(--ink-3);margin:12px 0 0">Consultation seule : le porte-monnaie se modifie depuis un compte parent.</p>';
+  } else if(!form){
+    h += '<div class="btnrow" style="margin-top:14px">' +
+         '<button class="btn" id="cag-add" style="flex:1;background:var(--pos-bg);color:var(--pos);border-color:var(--pos-line)">+ Ajouter un montant</button>' +
+         '<button class="btn" id="cag-sub" style="flex:1;background:var(--dang-bg);color:var(--dang);border-color:var(--dang-line)">− Déduire un achat</button>' +
+         '</div>';
+  } else {
+    var isAdd = form === "add";
+    var presets = isAdd ? S.presets.cagAdd : S.presets.cagSub;
+    h += '<div class="cagform">' +
+         '<div class="eyebrow">' + (isAdd ? "Ajout exceptionnel" : "Achat à déduire") + '</div>' +
+         '<div class="field"><label for="cag-n">Montant en euros</label>' +
+         '<div class="amtrow"><input class="input mono" type="number" id="cag-n" min="1" step="1" value="' +
+         (isAdd ? 5 : Math.max(1, Math.min(5, solde || 1))) + '" data-autofocus>' +
+         '<span class="amtunit" id="cag-eq">' + esc(U()) + '</span></div>' +
+         (isAdd ? "" : '<div class="aide" id="cag-warn"></div>') + '</div>' +
+         '<div class="field"><label for="cag-note">' + (isAdd ? "Pour quelle raison ?" : "Pour quel achat ?") + '</label>' +
+         '<input class="input" id="cag-note" placeholder="' + (isAdd ? "Ex : a aidé toute la journée au garage" : "Ex : figurine achetée samedi") + '"></div>' +
+         '<div class="presets">' + presets.map(function(p){ return '<button type="button" class="preset">' + esc(p) + "</button>"; }).join("") + "</div>" +
+         '<div class="field"><label for="cag-date">Date</label><input class="input" type="date" id="cag-date" value="' + todayISO() + '"></div>' +
+         '<div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="cag-back">Annuler</button>' +
+         '<button class="btn primary" id="cag-ok">' + (isAdd ? "Ajouter à la réserve" : "Retirer de la réserve") + '</button></div>' +
+         '</div>';
+  }
+
+  h += '<div class="eyebrow" style="margin-top:20px">Historique — ' + esc(nomCagnotte()) + '</div>';
+  if(!log.length){
+    h += '<div class="empty" style="padding:22px 0">Réserve vide. Elle se remplit à la réunion, ou ici avec un ajout exceptionnel.</div>';
+  } else {
+    h += '<div class="caglog">';
+    var running = solde;
+    log.forEach(function(l){
+      h += '<div class="cagrow"><div class="delta ' + (l.delta >= 0 ? "p" : "m") + '">' + sgn(l.delta) + "</div>" +
+           '<div class="cagbody"><div class="cagnote">' + esc(l.note) + "</div>" +
+           '<div class="when">' + cagKindLabel(l) + " · " + fWhen(l.at) + parName(l.by) + "</div></div>" +
+           '<div class="cagsolde mono" title="Solde après ce mouvement">' + fMontant(running) + "</div>" +
+           '<button class="undo" data-cagdel="' + l.id + '">suppr.</button></div>';
+      running -= l.delta;
+    });
+    h += "</div>";
+  }
+  h += "</div>";
+  h += '<footer><button class="btn primary" id="cag-close">Fermer</button></footer>';
+
+  openModal(h, function(root){
+    root.querySelector("#cag-close").onclick = closeModal;
+    var a = root.querySelector("#cag-add"), b = root.querySelector("#cag-sub");
+    if(a) a.onclick = async function(){ var ok = await requirePin("Le code parent est demandé pour modifier une cagnotte.", true); if(ok) openCagnotte(childId, "add"); };
+    if(b) b.onclick = async function(){ var ok = await requirePin("Le code parent est demandé pour modifier une cagnotte.", true); if(ok) openCagnotte(childId, "sub"); };
+
+    if(readOnly) root.querySelectorAll("[data-cagdel]").forEach(function(x){ x.remove(); });
+    root.querySelectorAll("[data-cagdel]").forEach(function(x){
+      x.onclick = async function(){
+        var ok = await requirePin("Le code parent est demandé pour supprimer une ligne de cagnotte.", true); if(!ok) return;
+        var t = S.cagnotteLog.filter(function(y){ return y.id === x.getAttribute("data-cagdel"); })[0];
+        if(t){ t.deleted = true; persistLocal(); queueSave(); render(); openCagnotte(childId); toast("Ligne supprimée"); }
+      };
+    });
+
+    if(form){
+      var isAdd = form === "add";
+      var nEl = root.querySelector("#cag-n"), eq = root.querySelector("#cag-eq"), warn = root.querySelector("#cag-warn");
+      function sync(){
+        var n = parseInt(nEl.value, 10) || 0;
+        eq.textContent = U();
+        if(warn) warn.textContent = (n > solde) ? "La réserve ne contient que " + fMontant(solde) + "." : "";
+      }
+      nEl.oninput = sync; sync();
+      var note = root.querySelector("#cag-note");
+      root.querySelectorAll(".preset").forEach(function(pb){ pb.onclick = function(){ note.value = pb.textContent; note.focus(); }; });
+      root.querySelector("#cag-back").onclick = function(){ openCagnotte(childId); };
+      root.querySelector("#cag-ok").onclick = function(){
+        var n = parseInt(nEl.value, 10);
+        if(!(n > 0)){ nEl.focus(); nEl.style.borderColor = "var(--dang)"; return; }
+        if(!isAdd && n > solde){ nEl.focus(); nEl.style.borderColor = "var(--dang)"; return; }
+        var txt = note.value.trim();
+        if(txt.length < 2){ note.focus(); note.style.borderColor = "var(--dang)"; return; }
+        var d = root.querySelector("#cag-date").value || todayISO();
+        var at = (d === todayISO()) ? nowISO() : d + "T20:00:00.000Z";
+        S.cagnotteLog.push({ id: uid(), child: childId, delta: isAdd ? n : -n, note: txt, at: at,
+                             week: S.weekStart, kind: isAdd ? "bonus" : "achat",
+                             by: meEmail(), deleted: false });
+        persistLocal(); queueSave(); render();
+        openCagnotte(childId);
+        toast(c.name + " : " + (isAdd ? "+" : "−") + fMontant(n) + " — " + nomCagnotte().toLowerCase());
+      };
+    }
+  });
+}
+
+/* ====================== RENDU : BANDEAUX ====================== */
+function isMeetingDue(){
+  if(!S.weekStart) return false;
+  var d = new Date();
+  var days = daysBetween(S.weekStart, nowISO());
+  return (d.getDay() === 5 && days >= 1) || days >= 7;
+}
+function renderBanners(){
+  var out = "";
+  if(!cloudOn && estEssai()){
+    out += '<div class="banner soft"><span>🧪</span><div><b>Version d\'essai.</b> ' +
+           'Tout reste sur cet appareil : rien n\'est envoyé sur un serveur, rien n\'est partagé. ' +
+           'Tu peux tout modifier sans crainte.</div>' +
+           '<button data-raz="1">Recommencer</button></div>';
+  }
+  else if(!cloudOn){
+    out += '<div class="banner"><span>⚠️</span><div><b>Pas de partage entre appareils pour l\'instant.</b> ' +
+           'Les points sont enregistrés sur cet appareil seulement. ' +
+           '<span style="opacity:.75">Raison technique : ' + esc(cloudWhy || "inconnue") + '.</span></div>' +
+           '<button data-retry="1">Recharger</button></div>';
+  }
+  if(isMeetingDue() && UI.view !== "meeting"){
+    out += '<div class="banner call"><span>🏆</span><div><b>Réunion de la semaine à faire.</b> Ouvre l\'écran Réunion pour faire le point ensemble, puis clôture la semaine.</div><button data-go="meeting">Ouvrir</button></div>';
+  }
+  if(MULTI && fb.user && fb.user.emailVerified === false){
+    out += '<div class="banner"><span>✉️</span><div><b>Confirme ton adresse.</b> ' +
+           'Un message est parti vers ' + esc(fb.user.email || "ton adresse") + '. ' +
+           'Sans ça, tu ne pourras pas récupérer ton mot de passe si tu l\'oublies. ' +
+           '<span style="opacity:.75">Regarde aussi dans les indésirables.</span></div>' +
+           '<button data-renvoi="1">Renvoyer</button></div>';
+  }
+  if(peutProposerInstall()){
+    out += '<div class="banner soft"><span>📲</span><div><b>Installer l\'application.</b> ' +
+           'Une icône sur l\'écran d\'accueil, ouverture en plein écran et la pastille rouge des nouveaux points.</div>' +
+           '<button data-install="1">Installer</button><button data-installlater="1">Plus tard</button></div>';
+  }
+  var b = el("banners");
+  b.innerHTML = out;
+  b.querySelectorAll("[data-go]").forEach(function(x){ x.onclick = function(){ go(x.getAttribute("data-go")); }; });
+  b.querySelectorAll("[data-retry]").forEach(function(x){ x.onclick = function(){ location.reload(); }; });
+  b.querySelectorAll("[data-raz]").forEach(function(x){
+    x.onclick = function(){
+      openModal('<header><h3>Recommencer l\'essai ?</h3><p>Les prénoms, les points et les réglages saisis ici seront effacés, et l\'assistant repartira de zéro.</p></header>' +
+        '<footer><button class="btn ghost" id="cancel">Annuler</button><button class="btn danger" id="ok">Tout effacer</button></footer>',
+        function(root){
+          root.querySelector("#cancel").onclick = closeModal;
+          root.querySelector("#ok").onclick = function(){
+            try{ localStorage.removeItem(LS); }catch(e){}
+            location.reload();
+          };
+        });
+    };
+  });
+  b.querySelectorAll("[data-renvoi]").forEach(function(x){
+    x.onclick = function(){
+      if(!fb.user) return;
+      FBLIB.sendEmailVerification(fb.user)
+        .then(function(){ toast("Message renvoyé à " + (fb.user.email || "ton adresse")); })
+        .catch(function(err){ toast("Envoi impossible (" + ((err && err.code) || "erreur") + ")"); });
+    };
+  });
+  b.querySelectorAll("[data-install]").forEach(function(x){ x.onclick = lancerInstall; });
+  b.querySelectorAll("[data-installlater]").forEach(function(x){ x.onclick = function(){ masquerInstall(); }; });
+}
+
+/* ====================== INSTALLATION SUR L'ÉCRAN D'ACCUEIL ======================
+   Chrome n'affiche plus tout seul la fenêtre « Installer l'application » : il
+   déclenche l'évènement beforeinstallprompt et laisse le site décider du moment.
+   On le garde de côté, on propose un bouton, et c'est le clic qui ouvre la
+   vraie fenêtre système. Sur iPhone l'évènement n'existe pas : Safari n'offre
+   que le passage par le menu Partager, donc on affiche la marche à suivre.
+   Source : developer.chrome.com/blog/update-install-criteria */
+var promptInstall = null;
+var installFaite  = false;
+
+function estInstallee(){
+  if(installFaite) return true;
+  try{
+    if(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) return true;
+    if(window.matchMedia && window.matchMedia("(display-mode: fullscreen)").matches) return true;
+  }catch(_){}
+  if(window.navigator.standalone === true) return true;   /* iOS */
+  return false;
+}
+function estIOS(){
+  var ua = navigator.userAgent || "";
+  if(/iPhone|iPad|iPod/i.test(ua)) return true;
+  return navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+}
+function installMasquee(){
+  try{ return localStorage.getItem("tp_install_masque") === "1"; }catch(_){ return false; }
+}
+function masquerInstall(){
+  try{ localStorage.setItem("tp_install_masque", "1"); }catch(_){}
+  renderBanners();
+}
+function peutProposerInstall(){
+  if(estInstallee()) return false;
+  if(installMasquee()) return false;
+  return !!promptInstall || estIOS();
+}
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();          /* sinon Chrome affiche sa mini-barre à son heure */
+  promptInstall = e;
+  try{ localStorage.removeItem("tp_install_masque"); }catch(_){}
+  if(typeof S !== "undefined" && S) renderBanners();
+});
+window.addEventListener("appinstalled", function(){
+  installFaite = true; promptInstall = null;
+  try{ localStorage.removeItem("tp_install_masque"); }catch(_){}
+  toast("Application installée");
+  if(typeof S !== "undefined" && S) render();
+});
+function lancerInstall(){
+  if(promptInstall){
+    var p = promptInstall;
+    p.prompt();
+    p.userChoice.then(function(r){
+      if(r && r.outcome === "accepted") promptInstall = null;
+      renderBanners();
+    }).catch(function(){});
+    return;
+  }
+  aideInstall();
+}
+function aideInstall(){
+  var pas = estIOS()
+    ? '<li>Touche le bouton <b>Partager</b> en bas de Safari (le carré avec la flèche).</li>' +
+      '<li>Fais défiler et choisis <b>Sur l\'écran d\'accueil</b>.</li>' +
+      '<li>Valide avec <b>Ajouter</b>.</li>'
+    : '<li>Ouvre le menu <b>⋮</b> en haut à droite de Chrome.</li>' +
+      '<li>Choisis <b>Installer l\'application</b> — ou <b>Ajouter à l\'écran d\'accueil</b>.</li>' +
+      '<li>Valide avec <b>Installer</b>.</li>';
+  openModal(
+    '<header><h3>Installer l\'application</h3><p>En trois gestes, depuis le navigateur.</p></header>' +
+    '<div class="content"><ol style="margin:0; padding-left:20px; line-height:1.9">' + pas + '</ol>' +
+    '<p style="font-size:.85rem;color:var(--ink-2);margin:14px 0 0">' +
+    (estIOS()
+      ? 'À faire depuis <b>Safari</b> : Chrome sur iPhone ne sait pas installer les applications web.'
+      : 'Si l\'entrée n\'apparaît pas, recharge la page une fois puis rouvre le menu.') +
+    '</p></div>' +
+    '<footer><button class="btn primary" id="ok">J\'ai compris</button></footer>',
+    function(root){ root.querySelector("#ok").onclick = closeModal; }
+  );
+}
+
+/* ====================== RENDU : TABS ====================== */
+var TABS = [
+  { id:"home",     label:"Tableau" },
+  { id:"meeting",  label:"Réunion" },
+  { id:"history",  label:"Historique" },
+  { id:"settings", label:"Réglages" }
+];
+function renderTabs(){
+  var n = unseen().length;
+  syncAppBadge(n);
+  var liste = readOnly ? TABS.filter(function(t){ return t.id !== "settings"; }) : TABS;
+  el("tabs").innerHTML = liste.map(function(t){
+    var badge = (t.id === "home" && n > 0)
+      ? '<span class="badge" aria-label="' + n + ' nouveau' + (n > 1 ? "x" : "") + ' point' + (n > 1 ? "s" : "") + '">' + (n > 99 ? "99+" : n) + "</span>"
+      : "";
+    return '<button data-tab="' + t.id + '" aria-current="' + (UI.view === t.id || (UI.view === "child" && t.id === "history")) + '">' + t.label + badge + "</button>";
+  }).join("");
+  el("tabs").querySelectorAll("[data-tab]").forEach(function(b){
+    b.onclick = function(){ go(b.getAttribute("data-tab")); };
+  });
+}
+function go(view, childId){
+  UI.view = view; UI.child = childId || null;
+  window.scrollTo({ top:0, behavior:"instant" });
+  render();
+}
+
+/* ====================== RENDU : ACCUEIL ====================== */
+function weekLabel(){
+  if(!S.weekStart) return { start: null, days: 0 };
+  return { start: dateOnly(S.weekStart), days: daysBetween(S.weekStart, nowISO()) };
+}
+function railMarker(n){
+  var pct = Math.max(0, Math.min(100, ((n + 5) / 10) * 100));
+  return pct;
+}
+function cardHTML(c){
+  var n = scoreOf(c.id);
+  var v = verdictLabel(n);
+  var cg = cagnotteOf(c.id);
+  var pw = palierInfo(n);   // progression des POINTS de la semaine, pas du porte-monnaie
+  var sanc = activeSanctions(c.id);
+  var a = ageOf(c.birth);
+  var zcls = zoneOf(n) === "good" ? "z-good" : zoneOf(n) === "warn" ? "z-warn" : zoneOf(n) === "bad" ? "z-bad" : "";
+  var h = "";
+  h += '<article class="card ' + laneOf(c.id) + '">';
+  h += '<div class="lane"></div>';
+  h += '<div class="head"><div class="avatar">' + esc(c.name.charAt(0)) + '</div><div><h3>' + esc(c.name) + "</h3>" +
+       '<div class="age">' + (a != null ? a + " ans" : "") + "</div></div></div>";
+  h += '<div class="divider" style="margin:16px 18px 0"><span>Points de la semaine</span></div>';
+  h += '<div class="scoreblock"><div class="score ' + zcls + ' mono">' + sgn(n) + '</div><div class="scoreunit">point' + (Math.abs(n) > 1 ? "s" : "") + "<br>cette semaine</div></div>";
+  h += '<div class="verdict ' + v.cls + '"><span aria-hidden="true">' + v.icon + "</span>" + esc(v.txt) + "</div>";
+  h += '<div class="rail"><div class="railbar"><i class="s-bad"></i><i class="s-warn"></i><i class="s-mid"></i><i class="s-good"></i></div>' +
+       '<div class="marker" style="left:' + railMarker(n) + '%"></div>' +
+       '<div class="railticks"><span>−5 sanction</span><span>−3 alerte</span><span>0</span><span>+5</span></div></div>';
+  h += '<div class="sub">';
+  if(n > 0){
+    h += '<div class="chip"><span aria-hidden="true">🎁</span><span>Vaut <b>' + fMontant(pw.euros) + '</b>' +
+         (S.cadeauPossible ? " — cadeau ou " + esc(nomCagnotte().toLowerCase()) : "") + ' · encore ' +
+         pw.missing + ' pt' + (pw.missing > 1 ? "s" : "") + ' pour ' + fMontant(pw.next) + '</span></div>';
+  }
+  var ax = axeOf(c.id);
+  if(ax && ax.label){
+    h += '<div class="chip axe"><span aria-hidden="true">🎯</span><span><b>Axe de la semaine</b> · ' + esc(ax.label) +
+         (S.doubleSiAxe ? " <i>— points doublés s'il est tenu</i>" : "") + "</span></div>";
+  }
+  sanc.forEach(function(s){
+    h += '<div class="chip bad"><span aria-hidden="true">⛔</span><b>' + esc(s.label) + "</b><span class=\"r\">jusqu'au " + fDate(s.end) + "</span></div>";
+  });
+  h += "</div>";
+  h += '<div class="divider" style="margin:16px 18px 0"><span>' + esc(nomCagnotte()) + '</span></div>';
+  h += '<div class="sub" style="padding-top:9px">' +
+       '<button class="chip brass btnlike" data-cag="' + c.id + '"><span aria-hidden="true">👛</span><b>' + esc(nomCagnotte()) + '</b>' +
+       '<span class="r">' + fMontant(cg) + '</span><span class="arrow">›</span></button></div>';
+  if(!readOnly){
+    h += '<div class="actions">' +
+         '<button class="bigbtn btn-minus" data-act="minus" data-id="' + c.id + '"><span>−</span> Bêtise</button>' +
+         '<button class="bigbtn btn-plus" data-act="plus" data-id="' + c.id + '"><span>+</span> Bonne action</button></div>';
+  } else {
+    h += '<div style="margin-top:auto"></div>';
+  }
+  h += '<button class="linkbtn" data-act="hist" data-id="' + c.id + '">Voir la fiche de ' + esc(c.name) + " →</button>";
+  h += "</article>";
+  return h;
+}
+
+function viewHome(){
+  var w = weekLabel();
+  var n = eventsOfWeek(S.weekStart).length;
+  var h = "";
+  // Les cartes en premier : on ouvre l'appli pour mettre un bâton, pas pour lire un bandeau.
+  h += '<div class="home-wide"><div class="hw-main">';
+  h += '<div class="grid">' + S.children.map(cardHTML).join("") + "</div>";
+  h += '<div class="weekstrip" style="margin:20px 0 0"><div><div class="eyebrow">Semaine en cours</div>' +
+       "<h2>" + (S.weekStart ? "Depuis le " + fDateFull(S.weekStart) : "Semaine à démarrer") + "</h2></div>" +
+       '<div class="meta">' + (S.weekStart ? "Jour " + (w.days + 1) + " · " : "") + n + " mouvement" + (n > 1 ? "s" : "") + "</div>" +
+       '<div class="spacer"></div><button class="btn primary" data-go="meeting">Réunion de la semaine</button></div>';
+  h += '</div><aside class="hw-side">';
+
+  var feed = eventsOfWeek(S.weekStart).slice(0, 25);
+  h += '<section class="section"><h2>Derniers mouvements</h2><p class="lead">Tout ce qui a été coché depuis le début de la semaine, du plus récent au plus ancien.</p><div class="panel">';
+  if(!feed.length){
+    h += '<div class="empty">Rien pour l\'instant. Le premier + ou − apparaîtra ici.</div>';
+  } else {
+    h += feed.map(function(e){
+      var neuf = isNew(e);
+      return '<div class="feedrow ' + laneOf(e.child) + (neuf ? " neuf" : "") + '"><div class="delta ' + (e.delta > 0 ? "p" : "m") + '">' + (e.delta > 0 ? "+1" : "−1") + "</div>" +
+             '<div class="body">' +
+               '<div class="when"><b>' + esc(nameOf(e.child)) + "</b> · " + fWhen(e.at) +
+               (neuf ? '<span class="tagneuf">nouveau</span>' : "") + "</div>" +
+               '<div class="note">' + (e.delta > 0 ? "+1" : "−1") + " — " + esc(e.note) +
+               (e.by ? ' <span class="par">par ' + esc(whoName(e.by)) + "</span>" : "") + "</div>" +
+             "</div>" +
+             (readOnly ? "" :
+               '<div class="rowacts"><button class="undo" data-del="' + e.id + '">supprimer</button>' +
+               '<button class="undo edit" data-edit="' + e.id + '">modifier</button></div>') + "</div>";
+    }).join("");
+  }
+  h += "</div></section>";
+  h += "</aside></div>";
+  return h;
+}
+
+/* ====================== RENDU : RÉUNION ====================== */
+function ensureDraft(){
+  if(!S.draft || S.draft.week !== S.weekStart){
+    S.draft = { week: S.weekStart, choices: {} };
+  }
+  S.children.forEach(function(c){
+    if(!S.draft.choices[c.id]) S.draft.choices[c.id] = { mode:null, gift:"", axisDone:null, nextAxis:"",
+                                                          sanction:{ label:"", start:todayISO(), end:"", note:"" } };
+    var ch0 = S.draft.choices[c.id];
+    if(ch0.axisDone === undefined) ch0.axisDone = null;
+    if(ch0.nextAxis === undefined) ch0.nextAxis = "";
+  });
+  return S.draft;
+}
+/* ====================== LE GRAPHIQUE DE LA SEMAINE ==================
+   Une colonne par jour (le solde du jour) et, par-dessus, la courbe du
+   total depuis le début de la semaine. Une seule échelle verticale pour
+   les deux : deux axes feraient croire à un rapport qui n'existe pas.
+
+   Le vert et le rouge sont le couple que les daltoniens distinguent le
+   plus mal (écart perçu mesuré à 6,3 en thème clair, 5,2 en sombre, pour
+   un seuil confortable de 8). Ici c'est la POSITION qui porte
+   l'information — au-dessus ou en dessous de la ligne du zéro — et le
+   signe est écrit dans l'infobulle. La couleur ne fait que confirmer. */
+
+function joursDeLaSemaine(childId){
+  if(!S.weekStart) return null;
+  var evs = eventsOfWeek(S.weekStart, childId);
+  if(!evs.length) return null;
+
+  var debut = new Date(S.weekStart), fin = new Date();
+  debut.setHours(0,0,0,0); fin.setHours(0,0,0,0);
+  var jours = [], curseur = new Date(debut);
+  while(curseur <= fin && jours.length < 21){
+    jours.push({ cle: curseur.toISOString().slice(0,10), d: new Date(curseur), solde: 0, plus: 0, moins: 0 });
+    curseur.setDate(curseur.getDate() + 1);
+  }
+  if(!jours.length) return null;
+
+  var parCle = {};
+  jours.forEach(function(j){ parCle[j.cle] = j; });
+  evs.forEach(function(e){
+    var k = String(e.at).slice(0,10), j = parCle[k];
+    if(!j) return;
+    j.solde += e.delta;
+    if(e.delta > 0) j.plus++; else j.moins++;
+  });
+
+  var t = 0;
+  jours.forEach(function(j){ t += j.solde; j.cumul = t; });
+  return jours;
+}
+
+var JOURS_COURTS = ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."];
+
+function graphiqueSemaine(childId){
+  var jours = joursDeLaSemaine(childId);
+  if(!jours) return "";
+
+  // Une seule journée ne raconte aucune évolution : on montre les compteurs,
+  // et la courbe apparaît dès le deuxième jour.
+  var avecPoints = jours.filter(function(j){ return j.plus || j.moins; }).length;
+  var dessiner = jours.length >= 2 && avecPoints >= 1;
+
+  var W = 340, H = 170, mg = { g:28, d:16, h:16, b:24 };
+  var pw = W - mg.g - mg.d, ph = H - mg.h - mg.b;
+
+  var toutes = [];
+  jours.forEach(function(j){ toutes.push(j.solde, j.cumul); });
+  var maxi = Math.max.apply(null, toutes.concat([1]));
+  var mini = Math.min.apply(null, toutes.concat([-1]));
+  var marge = Math.max(1, Math.round((maxi - mini) * 0.15));
+  maxi += marge; mini -= marge;
+
+  function y(v){ return mg.h + (maxi - v) / (maxi - mini) * ph; }
+  var bande = pw / jours.length;
+  function xc(i){ return mg.g + bande * i + bande / 2; }
+  var y0 = y(0);
+
+  var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="graphsem" role="img" aria-label="' +
+          esc("Points de la semaine, jour par jour et en cumul") + '">';
+
+  [maxi - marge, mini + marge].forEach(function(v){
+    if(Math.abs(v) < 0.5) return;
+    if(Math.abs(y(v) - y0) < 13) return;      // un repère trop près du zéro se marcherait dessus
+    s += '<line class="gs-grid" x1="' + mg.g + '" x2="' + (W - mg.d) + '" y1="' + y(v).toFixed(1) +
+         '" y2="' + y(v).toFixed(1) + '"/>' +
+         '<text class="gs-axe" x="' + (mg.g - 6) + '" y="' + (y(v) + 3.5).toFixed(1) +
+         '" text-anchor="end">' + (v > 0 ? "+" : "") + v + "</text>";
+  });
+
+  s += '<line class="gs-zero" x1="' + mg.g + '" x2="' + (W - mg.d) + '" y1="' + y0.toFixed(1) +
+       '" y2="' + y0.toFixed(1) + '"/>' +
+       '<text class="gs-axe" x="' + (mg.g - 6) + '" y="' + (y0 + 3.5).toFixed(1) + '" text-anchor="end">0</text>';
+
+  var lg = Math.min(22, Math.max(6, bande - 8));
+  jours.forEach(function(j, i){
+    if(!j.solde) return;
+    var haut = Math.abs(y(j.solde) - y0), x = xc(i) - lg / 2;
+    var yy = j.solde > 0 ? y(j.solde) : y0, r = Math.min(4, lg / 2, haut);
+    var d = j.solde > 0
+      ? "M" + x + "," + (yy + haut) + " V" + (yy + r) + " Q" + x + "," + yy + " " + (x + r) + "," + yy +
+        " H" + (x + lg - r) + " Q" + (x + lg) + "," + yy + " " + (x + lg) + "," + (yy + r) +
+        " V" + (yy + haut) + " Z"
+      : "M" + x + "," + yy + " V" + (yy + haut - r) + " Q" + x + "," + (yy + haut) + " " + (x + r) + "," +
+        (yy + haut) + " H" + (x + lg - r) + " Q" + (x + lg) + "," + (yy + haut) + " " + (x + lg) + "," +
+        (yy + haut - r) + " V" + yy + " Z";
+    s += '<path d="' + d + '" class="' + (j.solde > 0 ? "gs-plus" : "gs-moins") + '"/>';
+  });
+
+  var pts = jours.map(function(j, i){ return xc(i).toFixed(1) + "," + y(j.cumul).toFixed(1); });
+  s += '<polyline class="gs-ligne" points="' + pts.join(" ") + '"/>';
+  jours.forEach(function(j, i){
+    s += '<circle class="gs-pt" cx="' + xc(i).toFixed(1) + '" cy="' + y(j.cumul).toFixed(1) + '" r="4"/>';
+  });
+
+  // une seule valeur écrite : le total d'arrivée
+  var dn = jours[jours.length - 1].cumul;
+  s += '<text class="gs-val" x="' + (xc(jours.length - 1) + 8) + '" y="' + (y(dn) + 3.5).toFixed(1) +
+       '">' + (dn > 0 ? "+" : "") + dn + "</text>";
+
+  var pas = jours.length > 9 ? 2 : 1;
+  jours.forEach(function(j, i){
+    if(i % pas && i !== jours.length - 1) return;
+    s += '<text class="gs-axe" x="' + xc(i).toFixed(1) + '" y="' + (H - 7) + '" text-anchor="middle">' +
+         JOURS_COURTS[j.d.getDay()] + "</text>";
+  });
+
+  jours.forEach(function(j, i){
+    var titre = JOURS_COURTS[j.d.getDay()] + " " + fDate(j.cle) + " — journée " +
+                (j.solde > 0 ? "+" : "") + j.solde + ", total " + (j.cumul > 0 ? "+" : "") + j.cumul;
+    s += '<rect class="gs-zone" x="' + (mg.g + bande * i).toFixed(1) + '" y="' + mg.h + '" width="' +
+         bande.toFixed(1) + '" height="' + ph + '"><title>' + esc(titre) + "</title></rect>";
+  });
+
+  s += "</svg>";
+
+  var bonnes = 0, betises = 0, meilleur = null;
+  jours.forEach(function(j){
+    bonnes += j.plus; betises += j.moins;
+    if(j.solde > 0 && (!meilleur || j.solde > meilleur.solde)) meilleur = j;
+  });
+
+  return '<div class="graphbloc">' + (dessiner ? s +
+    '<p class="gs-note">Colonnes : la journée · Ligne : le total</p>' : "") +
+    '<div class="gs-tuiles">' +
+      '<div class="gs-tuile"><span class="k">Bonnes actions</span><b class="v-plus">' + bonnes + "</b></div>" +
+      '<div class="gs-tuile"><span class="k">Bêtises</span><b class="v-moins">' + betises + "</b></div>" +
+      '<div class="gs-tuile"><span class="k">Meilleur jour</span><b>' +
+        (meilleur ? JOURS_COURTS[meilleur.d.getDay()] : "—") + "</b></div>" +
+    "</div></div>";
+}
+
+function viewMeeting(){
+
+  var d = ensureDraft();
+  var evs = eventsOfWeek(S.weekStart);
+  var h = "";
+  h += '<div class="weekstrip"><div><div class="eyebrow">Réunion de la semaine</div>' +
+       "<h2>" + (S.weekStart ? "Bilan du " + fDateFull(S.weekStart) + " à aujourd'hui" : "Aucune semaine en cours") + "</h2></div>" +
+       '<div class="meta">' + evs.length + " mouvement" + (evs.length > 1 ? "s" : "") + " à relire ensemble</div>" +
+       '<div class="spacer"></div></div>';
+
+  h += '<div class="panel">';
+  S.children.forEach(function(c){
+    var n = scoreOf(c.id);
+    var ch = d.choices[c.id];
+    var ax = axeOf(c.id);
+    var tot = totalCompte(n, ch.axisDone === true);
+    var v = verdictLabel(n);
+    var list = eventsOfWeek(S.weekStart, c.id).slice().reverse();
+    var zcls = zoneOf(n) === "good" ? "z-good" : zoneOf(n) === "warn" ? "z-warn" : zoneOf(n) === "bad" ? "z-bad" : "";
+    h += '<section class="meet-child ' + laneOf(c.id) + '">';
+    h += '<div class="meet-head"><div class="avatar">' + esc(c.name.charAt(0)) + "</div>" +
+         "<h3 style=\"font-size:1.5rem\">" + esc(c.name) + "</h3>" +
+         '<div class="score ' + zcls + ' mono">' + sgn(n) + "</div>" +
+         (tot !== n ? '<div class="verdict v-good" style="margin:0">×2 → ' + sgn(tot) + "</div>" : "") +
+         '<div class="verdict ' + v.cls + '" style="margin:0"><span aria-hidden="true">' + v.icon + "</span>" + esc(v.txt) + "</div></div>";
+
+    h += graphiqueSemaine(c.id);
+
+    if(!list.length){
+      h += '<div class="empty">Aucun mouvement cette semaine.</div>';
+    } else {
+      h += '<ol class="timeline" style="list-style:none">';
+      list.forEach(function(e){
+        h += '<li class="tl ' + (e.delta > 0 ? "p" : "m") + '">' +
+             '<div class="when">' + fWhen(e.at) + "</div>" +
+             "<b>" + (e.delta > 0 ? "+1" : "−1") + "</b> — " + esc(e.note) +
+             (e.by ? ' <span class="par">par ' + esc(whoName(e.by)) + "</span>" : "") + "</li>";
+      });
+      h += "</ol>";
+    }
+
+    if(!readOnly){
+      h += '<div class="choicebox"><div class="eyebrow">Axe d\'amélioration</div>';
+      if(ax && ax.label){
+        h += '<p style="margin:8px 0 0"><b>' + esc(ax.label) + '</b>' +
+             (S.doubleSiAxe ? ' <span style="color:var(--ink-2)">— s\'il est tenu, les points de la semaine comptent double.</span>' : "") + "</p>" +
+             '<div class="choices" style="margin-top:10px">' +
+             '<button class="choice" data-axe="1" data-id="' + c.id + '" aria-pressed="' + (ch.axisDone === true) + '"><b>✅ Tenu</b><small>' +
+             (n > 0 ? sgn(n) + " devient " + sgn(n * 2) : "Aucun effet : la semaine n'est pas positive.") + "</small></button>" +
+             '<button class="choice" data-axe="0" data-id="' + c.id + '" aria-pressed="' + (ch.axisDone === false) + '"><b>❌ Pas tenu</b><small>Les points comptent normalement.</small></button>' +
+             "</div>";
+      } else {
+        h += '<p style="margin:8px 0 0;color:var(--ink-2)">Aucun axe n\'avait été fixé pour cette semaine.</p>';
+      }
+      h += '<div class="field"><label for="ax-' + c.id + '">Axe pour la semaine qui vient</label>' +
+           '<input class="input" id="ax-' + c.id + '" data-nextaxe="' + c.id + '" value="' + esc(ch.nextAxis) + '" placeholder="Ex : ranger sa chambre tous les soirs"></div>';
+      var prop = proposerAxe(c.id);
+      if(prop){
+        h += '<button type="button" class="suggestion" data-axeprop="' + c.id + '" data-axeval="' + esc(prop.axe) + '">' +
+             '<span aria-hidden="true">💡</span><span><b>' + esc(prop.axe) + "</b><br>" +
+             '<i>d\'après les bêtises de la semaine : ' + prop.n + " sur " + prop.total +
+             (prop.n > 1 ? " y sont liées" : " y est liée") + "</i></span></button>";
+      }
+      h += '<div class="presets">' + S.presets.axes.map(function(x){
+              return '<button type="button" class="preset" data-axeprop="' + c.id + '">' + esc(x) + "</button>";
+           }).join("") + "</div></div>";
+    }
+
+    if(n > 0){
+      h += '<div class="choicebox"><div class="eyebrow">Choix de ' + esc(c.name) + '</div>' +
+           '<div class="choices">' +
+           '<button class="choice" data-choice="trophee" data-id="' + c.id + '" aria-pressed="' + (ch.mode === "trophee") + '">' +
+           "<b>🎁 Un cadeau</b><small>Un cadeau ou une babiole, à hauteur de " + fMontant(euroValue(tot)) + ", tout de suite.</small></button>" +
+           '<button class="choice" data-choice="cagnotte" data-id="' + c.id + '" aria-pressed="' + (ch.mode === "cagnotte") + '">' +
+           "<b>👛 " + fMontant(euroValue(tot)) + " — " + esc(nomCagnotte().toLowerCase()) + "</b><small>Ajoutés à sa réserve (" +
+           fMontant(cagnotteOf(c.id)) + " aujourd'hui) pour viser plus gros.</small></button>" +
+           "</div>";
+      if(ch.mode === "trophee"){
+        h += '<div class="field"><label for="gift-' + c.id + '">Cadeau choisi (facultatif)</label>' +
+             '<input class="input" id="gift-' + c.id + '" data-gift="' + c.id + '" value="' + esc(ch.gift) + '" placeholder="Ex : paquet de cartes"></div>';
+      }
+      h += "</div>";
+    } else if(n <= S.thresholds.punish){
+      h += '<div class="choicebox"><div class="eyebrow">Sanction décidée ensemble</div>' +
+           '<div class="field"><label for="sanc-' + c.id + '">Sanction</label>' +
+           '<select class="input" id="sanc-' + c.id + '" data-sanc="' + c.id + '">' +
+           '<option value="">— à choisir —</option>' +
+           S.presets.sanctions.map(function(p){ return '<option' + (ch.sanction.label === p ? " selected" : "") + ">" + esc(p) + "</option>"; }).join("") +
+           '<option value="__autre"' + (ch.sanction.label && S.presets.sanctions.indexOf(ch.sanction.label) < 0 ? " selected" : "") + ">Autre (à écrire)</option>" +
+           "</select></div>";
+      if(ch.sanction.label && S.presets.sanctions.indexOf(ch.sanction.label) < 0){
+        h += '<div class="field"><label for="sancfree-' + c.id + '">Laquelle ?</label><input class="input" id="sancfree-' + c.id + '" data-sancfree="' + c.id + '" value="' + esc(ch.sanction.label) + '"></div>';
+      }
+      h += '<div class="row2">' +
+           '<div class="field"><label for="ss-' + c.id + '">Début</label><input class="input" type="date" id="ss-' + c.id + '" data-sstart="' + c.id + '" value="' + esc(ch.sanction.start || todayISO()) + '"></div>' +
+           '<div class="field"><label for="se-' + c.id + '">Fin</label><input class="input" type="date" id="se-' + c.id + '" data-send="' + c.id + '" value="' + esc(ch.sanction.end || "") + '"></div>' +
+           "</div></div>";
+    } else if(n <= S.thresholds.warn){
+      h += '<div class="choicebox" style="background:var(--warn-bg);border-color:var(--warn-line)"><b style="color:var(--warn)">Zone orange : pas de trophée.</b> ' +
+           '<span style="color:var(--ink-2)">Il était à ' + (n - S.thresholds.punish) + ' point' + ((n - S.thresholds.punish) > 1 ? "s" : "") +
+           ' de la sanction. Le compteur repart à zéro.</span></div>';
+    } else {
+      h += '<div class="choicebox"><b>Pas de trophée cette semaine.</b> <span style="color:var(--ink-2)">Le compteur repart à zéro, tout est encore jouable la semaine prochaine.</span></div>';
+    }
+    h += "</section>";
+  });
+
+  var ready = evs.length > 0 && !readOnly;
+  if(readOnly){
+    h += '<div class="closebar"><p>Compte en lecture seule : tu peux tout consulter, mais la clôture et les décisions se font depuis un compte parent.</p></div>';
+    h += "</div>";
+    return h;
+  }
+  h += '<div class="closebar"><p>La clôture archive la semaine, applique les choix ci-dessus (trophée, réserve, sanction) et remet tous les compteurs à zéro. Rien ne se fait automatiquement : c\'est ce bouton qui décide.</p>' +
+       '<button class="btn primary" id="closeweek"' + (ready ? "" : " disabled") + ">Clôturer la semaine et remettre à zéro</button></div>";
+  h += "</div>";
+  return h;
+}
+
+async function closeWeek(){
+  var d = ensureDraft();
+  var problems = [];
+  S.children.forEach(function(c){
+    var n = scoreOf(c.id);
+    var ch = d.choices[c.id];
+    var ax = axeOf(c.id);
+    if(ax && ax.label && ch.axisDone === null) problems.push("Il faut dire si " + c.name + " a tenu son axe : « " + ax.label + " ».");
+    if(n > 0 && !ch.mode) problems.push(c.name + " n'a pas choisi sa récompense.");
+    if(n <= S.thresholds.punish && !ch.sanction.label) problems.push("La sanction de " + c.name + " n'est pas renseignée.");
+    if(n <= S.thresholds.punish && ch.sanction.label && !ch.sanction.end) problems.push("La date de fin de la sanction de " + c.name + " manque.");
+  });
+  if(problems.length){
+    openModal('<header><h3>Il manque une décision</h3></header><div class="content"><ul style="margin:0;padding-left:20px;color:var(--ink-2)">' +
+      problems.map(function(p){ return "<li>" + esc(p) + "</li>"; }).join("") +
+      '</ul></div><footer><button class="btn primary" id="ok">Compris</button></footer>',
+      function(root){ root.querySelector("#ok").onclick = closeModal; });
+    return;
+  }
+  var ok = await requirePin("Le code parent est demandé pour clôturer la semaine.", true);
+  if(!ok) return;
+
+  var week = S.weekStart, endISO = nowISO(), stamp = nowISO();
+  var lines = S.children.map(function(c){
+    var n = scoreOf(c.id);
+    var ch = d.choices[c.id];
+    var ax = axeOf(c.id);
+    var axTenu = ch.axisDone === true;
+    var tot = totalCompte(n, axTenu);
+    var outcome = "rien";
+    if(n > 0) outcome = ch.mode === "cagnotte" ? "cagnotte" : "trophee";
+    else if(n <= S.thresholds.punish) outcome = "sanction";
+    else if(n <= S.thresholds.warn) outcome = "alerte";
+
+    if(outcome === "cagnotte" && euroValue(tot) > 0){
+      S.cagnotteLog.push({ id: uid(), child: c.id, delta: euroValue(tot),
+                           note: "Semaine à " + sgn(n) + " points" + (tot !== n ? " (axe tenu, comptés double)" : ""),
+                           at: stamp, week: week, kind: "semaine", by: meEmail(), deleted:false });
+    }
+    // l'axe de la semaine qui vient
+    S.axes[c.id] = ch.nextAxis && ch.nextAxis.trim()
+      ? { label: ch.nextAxis.trim(), since: stamp }
+      : null;
+    if(outcome === "sanction"){
+      S.sanctions.push({ id: uid(), child: c.id, label: ch.sanction.label, start: ch.sanction.start || dateOnly(endISO),
+                         end: ch.sanction.end, note: ch.sanction.note || "", week: week, deleted:false });
+    }
+    return { childId:c.id, name:c.name, total:n, totalCompte:tot, outcome:outcome,
+             axe: ax && ax.label ? ax.label : "", axeTenu: ax && ax.label ? axTenu : null,
+             axeSuivant: (ch.nextAxis || "").trim(),
+             gift: outcome === "trophee" ? (ch.gift || "") : "",
+             cagnotteAdded: outcome === "cagnotte" ? euroValue(tot) : 0,
+             sanction: outcome === "sanction" ? { label: ch.sanction.label, start: ch.sanction.start || dateOnly(endISO), end: ch.sanction.end } : null };
+  });
+
+  S.weeks.push({ id: week, start: week, end: endISO, closedAt: stamp, lines: lines });
+  S.weekStart = stamp;
+  S.draft = null;
+  touch();
+  go("home");
+  toast("Semaine clôturée. Les compteurs repartent à zéro.");
+}
+
+/* ====================== RENDU : HISTORIQUE ====================== */
+function outcomeTag(o){
+  if(o === "trophee")  return '<span class="tag good">🎁 Cadeau</span>';
+  if(o === "cagnotte") return '<span class="tag pig">🐷 ' + esc(nomCagnotte()) + '</span>';
+  if(o === "sanction") return '<span class="tag bad">⛔ Sanction</span>';
+  if(o === "alerte")   return '<span class="tag none">⚠️ Zone orange</span>';
+  return '<span class="tag none">Pas de trophée</span>';
+}
+function viewHistory(){
+  var h = "";
+  h += '<div class="pills"><button class="pill" data-child="" aria-pressed="' + (!UI.child) + '">Toute la famille</button>' +
+       S.children.map(function(c){ return '<button class="pill" data-child="' + c.id + '" aria-pressed="' + (UI.child === c.id) + '">' + esc(c.name) + "</button>"; }).join("") + "</div>";
+
+  if(UI.child){
+    var c = child(UI.child);
+    var cg = cagnotteOf(c.id);
+    h += '<section class="section" style="margin-top:0"><h2>' + esc(c.name) + '</h2>' +
+         '<p class="lead">' + (ageOf(c.birth) != null ? ageOf(c.birth) + " ans · né le " + fDateFull(c.birth) : "") + "</p>";
+    h += '<div class="panel" style="padding:16px 18px; margin-bottom:16px">' +
+         '<div class="btnrow"><div class="chip brass" style="flex:1"><span aria-hidden="true">👛</span><b>' + esc(nomCagnotte()) + '</b><span class="r">' + fMontant(cg) + "</span></div>" +
+         '<button class="btn" data-cag="' + c.id + '">Ouvrir</button></div></div>';
+
+    var sanc = S.sanctions.filter(function(s){ return !s.deleted && s.child === c.id; }).sort(function(a,b){ return a.start < b.start ? 1 : -1; });
+    if(sanc.length){
+      h += '<div class="panel" style="margin-bottom:16px"><div class="wk"><h4>Sanctions</h4><div class="lines">' +
+           sanc.map(function(s){
+             var actif = !s.end || s.end >= todayISO();
+             return '<div class="wkline"><span class="nm">' + esc(s.label) + "</span>" +
+                    '<span class="mono" style="font-size:.82rem;color:var(--ink-3)">du ' + fDate(s.start) + " au " + fDate(s.end) + "</span>" +
+                    (actif ? '<span class="tag bad">en cours</span>' : '<span class="tag none">terminée</span>') + "</div>";
+           }).join("") + "</div></div></div>";
+    }
+
+    var g = graphiqueSemaine(c.id);
+    if(g) h += '<div class="panel" style="padding:16px 18px 10px; margin-bottom:16px">' + g + "</div>";
+
+    h += '<div class="panel">';
+    var cur = eventsOfWeek(S.weekStart, c.id);
+    h += '<div class="wk"><h4>Semaine en cours — ' + sgn(scoreOf(c.id)) + " pts</h4>";
+    h += cur.length ? '<div class="lines">' + cur.map(function(e){
+           return '<div class="wkline"><span class="delta ' + (e.delta > 0 ? "p" : "m") + '" style="width:28px;height:28px;font-size:.82rem">' + (e.delta > 0 ? "+1" : "−1") + "</span>" +
+                  "<span>" + esc(e.note) + '</span><span class="mono" style="font-size:.75rem;color:var(--ink-3);margin-left:auto">' + fWhen(e.at) + "</span>" +
+                  (e.by ? '<span style="font-size:.78rem;color:var(--ink-3)">par ' + esc(whoName(e.by)) + "</span>" : "") + "</div>";
+         }).join("") + "</div>" : '<p style="color:var(--ink-3);font-size:.88rem;margin:8px 0 0">Rien pour l\'instant.</p>';
+    h += "</div>";
+
+    S.weeks.slice().reverse().forEach(function(w){
+      var line = (w.lines || []).filter(function(l){ return l.childId === c.id; })[0];
+      var evs = eventsOfWeek(w.id, c.id);
+      h += '<div class="wk"><h4>Semaine du ' + fDate(w.start) + " au " + fDate(w.end) + " — " + (line ? sgn(line.total) : "?") + " pts</h4>";
+      if(line) h += '<div style="margin-top:6px">' + outcomeTag(line.outcome) + (line.gift ? ' <span style="font-size:.85rem;color:var(--ink-2)">· ' + esc(line.gift) + "</span>" : "") + "</div>";
+      if(evs.length){
+        h += '<div class="lines">' + evs.map(function(e){
+          return '<div class="wkline"><span class="delta ' + (e.delta > 0 ? "p" : "m") + '" style="width:28px;height:28px;font-size:.82rem">' + (e.delta > 0 ? "+1" : "−1") + "</span>" +
+                 "<span>" + esc(e.note) + '</span><span class="mono" style="font-size:.75rem;color:var(--ink-3);margin-left:auto">' + fWhen(e.at) + "</span>" +
+                 (e.by ? '<span style="font-size:.78rem;color:var(--ink-3)">par ' + esc(whoName(e.by)) + "</span>" : "") + "</div>";
+        }).join("") + "</div>";
+      }
+      h += "</div>";
+    });
+    h += "</div></section>";
+    return h;
+  }
+
+  h += '<section class="section" style="margin-top:0"><h2>Semaines archivées</h2>' +
+       '<p class="lead">Chaque ligne est le bilan validé lors d\'une réunion du vendredi.</p><div class="panel">';
+  if(!S.weeks.length){
+    h += '<div class="empty">Aucune semaine clôturée pour l\'instant. La première apparaîtra après la réunion.</div>';
+  } else {
+    S.weeks.slice().reverse().forEach(function(w){
+      h += '<div class="wk"><h4>Semaine du ' + fDate(w.start) + " au " + fDate(w.end) + "</h4>" +
+           '<div class="lines">' + (w.lines || []).map(function(l){
+             return '<div class="wkline"><span class="nm">' + esc(l.name) + '</span><span class="mono" style="min-width:44px">' + sgn(l.total) +
+                    (l.totalCompte != null && l.totalCompte !== l.total ? " ×2 = " + sgn(l.totalCompte) : "") + "</span>" +
+                    outcomeTag(l.outcome) +
+                    (l.axe ? '<span class="tag ' + (l.axeTenu ? "pig" : "none") + '">🎯 ' + esc(l.axe) + (l.axeTenu ? " · tenu" : " · pas tenu") + "</span>" : "") +
+                    (l.gift ? '<span style="font-size:.85rem;color:var(--ink-2)">' + esc(l.gift) + "</span>" : "") +
+                    (l.cagnotteAdded ? '<span style="font-size:.85rem;color:var(--ink-2)">+' + fMontant(l.cagnotteAdded) + "</span>" : "") +
+                    (l.sanction ? '<span style="font-size:.85rem;color:var(--dang)">' + esc(l.sanction.label) + " · jusqu'au " + fDate(l.sanction.end) + "</span>" : "") +
+                    "</div>";
+           }).join("") + "</div></div>";
+    });
+  }
+  h += "</div></section>";
+  return h;
+}
+
+/* ====================== RENDU : RÉGLAGES ====================== */
+function viewSettings(){
+  var h = "";
+  h += '<section class="section" style="margin-top:0"><h2>Réglages</h2><p class="lead">Tout ce qui se règle ici demande le code parent.</p>';
+
+  h += '<div class="panel" style="padding:18px">';
+  h += '<h4 style="font-size:1.05rem">Code parent</h4>';
+  h += '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 12px">' +
+       (S.pinEnabled
+         ? 'Le code est demandé pour valider un + ou un −. Il reste déverrouillé 30 minutes après la saisie.'
+         : 'Le code n\'est pas demandé pour les + et les − : ils se valident en un clic.') +
+       '</p><p style="font-size:.88rem;color:var(--ink-2);margin:0 0 12px"><b>Dans tous les cas</b>, le code reste exigé pour supprimer une ligne, toucher à une réserve, clôturer la semaine et modifier ces réglages — c\'est ce qui empêche les enfants de faire disparaître une bêtise.' +
+       '</p>';
+  h += '<div class="chip" style="margin-bottom:12px"><b>Code sur les + et les −</b>' +
+       '<span class="r">' + (S.pinEnabled ? "Activé" : "Désactivé") + '</span></div>';
+  h += '<div class="btnrow"><button class="btn' + (S.pinEnabled ? "" : " primary") + '" id="togglepin">' +
+       (S.pinEnabled ? "Désactiver le code" : "Réactiver le code") + '</button>' +
+       '<button class="btn" id="chpin">Changer le code</button></div></div>';
+
+  var mail = meEmail();
+  h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Ton nom dans l\'historique</h4>' +
+       '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 0">Il apparaît à côté de chaque point que tu attribues : « par Papa ».</p>' +
+       '<div class="field"><label for="myname">Nom affiché</label>' +
+       '<input class="input" id="myname" value="' + esc(mail ? whoName(mail) : "") + '" placeholder="Papa"' + (mail ? "" : " disabled") + '></div>' +
+       '<div class="btnrow" style="margin-top:10px"><button class="btn" id="savename"' + (mail ? "" : " disabled") + '>Enregistrer</button></div></div>';
+
+  var perm = ("Notification" in window) ? Notification.permission : "unsupported";
+  h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Alertes</h4>' +
+       '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 10px">' +
+       (perm === "granted"
+          ? "Les alertes sont autorisées. Une pastille rouge indique les points ajoutés par l\'autre parent depuis ton dernier passage, et une bannière s\'affiche si l\'application est ouverte en arrière-plan."
+        : perm === "denied"
+          ? "Les alertes sont bloquées par le navigateur. Il faut les réautoriser dans les réglages du site, à côté de la barre d\'adresse. La pastille rouge dans l\'application continue de fonctionner."
+          : "Autorise les alertes pour voir la pastille sur l\'icône de l\'écran d\'accueil et recevoir une bannière quand l\'autre parent ajoute un point.") +
+       '</p>' +
+       (perm === "default" ? '<div class="btnrow"><button class="btn primary" id="asknotif">Autoriser les alertes</button></div>' : "") +
+       '</div>';
+
+  h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Compte</h4>' +
+       '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 10px">Connecté en tant que <b>' +
+       esc(mail || "—") + '</b>. La déconnexion ne supprime rien : les points restent en ligne.</p>' +
+       '<div class="btnrow"><button class="btn" id="logout">Se déconnecter</button></div></div>';
+
+  h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">La famille</h4>' +
+       '<div class="row2"><div class="field"><label for="stfam">Nom affiché</label>' +
+       '<input class="input" id="stfam" value="' + esc(S.famille) + '" placeholder="Pernin"></div>' +
+       '<div class="field"><label for="stuni">Unité de récompense</label>' +
+       '<input class="input" id="stuni" value="' + esc(S.unite) + '" placeholder="€"></div>' +
+       '<div class="field"><label for="stunom">Nom de la réserve</label>' +
+       '<input class="input" id="stunom" value="' + esc(S.uniteNom) + '" placeholder="Cagnotte"></div></div>' +
+       '<label class="check"><input type="checkbox" id="stcad"' + (S.cadeauPossible ? " checked" : "") +
+       '><span>Proposer aussi <b>un cadeau</b>, au choix de l\'enfant</span></label>' +
+       '<div class="btnrow" style="margin-top:12px"><button class="btn" id="savefam">Enregistrer</button></div></div>';
+
+  if(MULTI && moi.famille){
+    h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Les comptes de la famille</h4>' +
+         '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 10px">Chaque personne a son propre compte. ' +
+         'Les <b>parents</b> peuvent tout faire ; un compte <b>enfant</b> ne peut que consulter, et c\'est le serveur qui l\'en empêche, ' +
+         'pas seulement l\'affichage.</p><div>';
+    if(!MEMBRES.length){
+      h += '<div class="empty" style="padding:14px 0">Chargement…</div>';
+    }
+    MEMBRES.forEach(function(m){
+      var moiMeme = fb.user && m.uid === fb.user.uid;
+      h += '<div class="membre"><span aria-hidden="true">' + (m.role === "parent" ? "🧑" : "🧒") + "</span>" +
+           "<span>" + esc(m.email || "compte sans adresse") + (moiMeme ? " <i>(toi)</i>" : "") + "</span>" +
+           '<span class="r">' + (m.role === "parent" ? "Parent" : "Consultation seule") + "</span></div>";
+    });
+    h += "</div>" +
+         '<div class="btnrow" style="margin-top:14px"><button class="btn" id="invparent">Inviter l\'autre parent</button>' +
+         '<button class="btn ghost" id="invenfant">Créer un accès enfants</button></div>' +
+         '<p style="font-size:.82rem;color:var(--ink-2);margin:10px 0 0">Un code d\'invitation s\'affiche : ' +
+         'la personne crée son compte sur cette même adresse et le saisit.</p></div>';
+  }
+
+  h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Enfants</h4><div class="scroller"><table class="tbl"><thead><tr><th>Prénom</th><th>Naissance</th><th>Âge</th><th></th></tr></thead><tbody>';
+  S.children.forEach(function(c){
+    h += '<tr><td><span class="pastille ' + laneOf(c.id) + '" style="margin-right:8px"></span><b>' + esc(c.name) + "</b></td>" +
+         "<td class=\"mono\">" + (c.birth ? fDate(c.birth) + " " + String(c.birth).slice(0,4) : "—") + "</td><td>" + (ageOf(c.birth) != null ? ageOf(c.birth) + " ans" : "—") + "</td>" +
+         '<td style="white-space:nowrap"><button class="btn ghost" data-editchild="' + c.id + '" style="padding:6px 12px">Modifier</button>' +
+         (S.children.length > 1 ? ' <button class="btn ghost" data-delchild="' + c.id + '" style="padding:6px 10px" aria-label="Retirer ' + esc(c.name) + '">✕</button>' : "") +
+         "</td></tr>";
+  });
+  h += '</tbody></table></div>' +
+       '<div class="btnrow" style="margin-top:12px"><button class="btn" id="addchild">+ Ajouter un enfant</button></div>' +
+       '<p style="font-size:.82rem;color:var(--ink-2);margin:10px 0 0">Retirer un enfant efface aussi ses points et sa réserve. ' +
+       'Fais une sauvegarde avant, si tu veux en garder la trace.</p></div>';
+
+  [["good","Raccourcis « bonne action »"],["bad","Raccourcis « bêtise »"],["sanctions","Liste des sanctions"],
+   ["cagAdd","Motifs d'ajout exceptionnel"],["cagSub","Motifs de retrait"]].forEach(function(p){
+    h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">' + p[1] + "</h4>" +
+         '<p style="font-size:.85rem;color:var(--ink-2);margin:6px 0 10px">Une ligne par entrée.</p>' +
+         '<textarea class="input" data-preset="' + p[0] + '" rows="7">' + esc(S.presets[p[0]].join("\n")) + "</textarea>" +
+         '<div class="btnrow" style="margin-top:10px"><button class="btn" data-savepreset="' + p[0] + '">Enregistrer</button></div></div>';
+  });
+
+  h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Seuils</h4>' +
+       '<div class="row2"><div class="field"><label for="tw">Zone orange à partir de</label><input class="input mono" type="number" id="tw" value="' + S.thresholds.warn + '" max="0"></div>' +
+       '<div class="field"><label for="tp">Sanction à partir de</label><input class="input mono" type="number" id="tp" value="' + S.thresholds.punish + '" max="0"></div>' +
+       '<div class="field"><label for="pal">Palier (points)</label><input class="input mono" type="number" id="pal" value="' + S.palier + '" min="1"></div>' +
+       '<div class="field"><label for="palv">Vaut (' + esc(U()) + ')</label><input class="input mono" type="number" id="palv" value="' + S.palierValue + '" min="1"></div></div>' +
+       '<p style="font-size:.85rem;color:var(--ink-2);margin:10px 0 0">Aujourd\'hui : une semaine positive vaut ' +
+       fMontant(S.palierValue) + ', et chaque palier de ' + S.palier + ' points complet ajoute ' +
+       fMontant(S.palierValue) + '. Soit ' + [1, S.palier, S.palier * 2, S.palier * 3].map(function(n){
+         return "+" + n + " → " + fMontant(euroValue(n));
+       }).join(" · ") + '.</p>' +
+       '<div class="btnrow" style="margin-top:12px"><button class="btn" id="savethr">Enregistrer</button></div></div>';
+
+  h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Application sur le téléphone</h4>' +
+       '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 10px">' +
+       (estInstallee()
+         ? 'Installée sur cet appareil. Elle s\'ouvre en plein écran, avec la pastille des nouveaux points.'
+         : 'À faire une fois par téléphone : une icône sur l\'écran d\'accueil, l\'ouverture en plein écran et la pastille rouge des nouveaux points.') +
+       '</p>' +
+       (estInstallee() ? '' :
+         '<div class="btnrow"><button class="btn" id="inst">Installer l\'application</button>' +
+         '<button class="btn ghost" id="insthelp">Voir la marche à suivre</button></div>') +
+       '</div>';
+
+  if(MULTI){
+    h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Soutenir l\'application</h4>' +
+         '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 12px">Elle est gratuite, et elle le restera. ' +
+         'Si elle vous est utile, un petit don aide à la faire vivre et à l\'améliorer.</p>' +
+         '<div class="btnrow"><button class="btn" id="fairedon">Faire un don</button></div></div>';
+
+    h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Mon compte et mes données</h4>' +
+         '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 12px">Tu peux partir quand tu veux, et tout emporter ou tout effacer. ' +
+         'Rien n\'est conservé en douce.</p>' +
+         '<div class="btnrow"><button class="btn ghost" id="voirdonnees">Ce que l\'application enregistre</button></div>' +
+         '<div class="btnrow" style="margin-top:12px"><button class="btn" id="quitterfam">Quitter cette famille</button></div>' +
+         (readOnly ? "" :
+           '<div class="btnrow" style="margin-top:12px"><button class="btn danger" id="suppfam">Supprimer la famille et toutes ses données</button></div>') +
+         '<div class="btnrow" style="margin-top:12px"><button class="btn danger" id="suppcompte">Supprimer mon compte</button></div>' +
+         '<p style="font-size:.82rem;color:var(--ink-2);margin:12px 0 0">Les deux dernières actions sont définitives. ' +
+         'Télécharge la sauvegarde d\'abord si tu veux garder une trace.</p></div>';
+  }
+
+  h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Sauvegarde</h4>' +
+       '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 10px">Une copie de toutes les données (points, historique, cagnottes, sanctions) au format JSON.</p>' +
+       '<div class="btnrow"><button class="btn" id="exp">Télécharger la sauvegarde</button><button class="btn ghost" id="imp">Restaurer depuis une sauvegarde</button></div></div>';
+
+  h += "</section>";
+  return h;
+}
+
+/* ====================== RENDU PRINCIPAL ====================== */
+var titrePose = "";
+function poserTitre(){
+  var t = titreApp();
+  if(t === titrePose) return;
+  titrePose = t;
+  var b = el("brandname"); if(b) b.textContent = t;
+  try{ document.title = t; }catch(e){}
+}
+/* Une saisie en cours interdit de réécrire l'écran : sans cela, un point coché
+   par l'autre parent arrivait pendant qu'on tapait un réglage et effaçait ce
+   qu'on était en train d'écrire — le bouton Enregistrer ne trouvait plus alors
+   que l'ancienne valeur, et confirmait un enregistrement qui ne changeait rien. */
+function saisieEnCours(){
+  var a = document.activeElement;
+  if(!a) return false;
+  var t = (a.tagName || "").toLowerCase();
+  if(t !== "input" && t !== "textarea" && t !== "select") return false;
+  var vue = el("view");
+  return !!(vue && vue.contains(a));
+}
+var renduDiffere = false;
+function relancerApresSaisie(){
+  document.removeEventListener("focusout", relancerApresSaisie);
+  renduDiffere = false;
+  setTimeout(function(){ if(S) render(); }, 80);
+}
+
+function render(){
+  poserTitre();
+  var bd = el("don-bande");
+  if(bd && MULTI && bd.getAttribute("data-fait") !== "1"){
+    bd.innerHTML = donBandeHTML();
+    bd.setAttribute("data-fait", "1");
+    var a = bd.querySelector("[data-don]");
+    if(a) a.onclick = function(){ var e = donEtat(); e.donne = 1; donEcrire(e); };
+  }
+  if(saisieEnCours()){
+    // On rafraîchit tout ce qui est hors de la zone de saisie, et on reviendra
+    // pour le reste dès que le champ aura perdu le focus.
+    renderTabs(); renderBanners();
+    if(!renduDiffere){
+      renduDiffere = true;
+      document.addEventListener("focusout", relancerApresSaisie);
+    }
+    return;
+  }
+  renderTabs();
+  renderBanners();
+  var v = el("view");
+  if(UI.view === "meeting")       v.innerHTML = viewMeeting();
+  else if(UI.view === "history" || UI.view === "child") v.innerHTML = viewHistory();
+  else if(UI.view === "settings") v.innerHTML = viewSettings();
+  else                            v.innerHTML = viewHome();
+  wire(v);
+  scheduleMarkSeen();
+}
+
+function wire(v){
+  v.querySelectorAll("[data-act]").forEach(function(b){
+    var id = b.getAttribute("data-id"), act = b.getAttribute("data-act");
+    b.onclick = function(){
+      if(act === "plus")  addPoint(id, 1);
+      if(act === "minus") addPoint(id, -1);
+      if(act === "hist"){ UI.child = id; go("history", id); }
+    };
+  });
+  v.querySelectorAll("[data-del]").forEach(function(b){
+    b.onclick = function(){ removeEvent(b.getAttribute("data-del")); };
+  });
+  v.querySelectorAll("[data-edit]").forEach(function(b){
+    b.onclick = function(){ editEvent(b.getAttribute("data-edit")); };
+  });
+  v.querySelectorAll("[data-go]").forEach(function(b){
+    b.onclick = function(){ go(b.getAttribute("data-go")); };
+  });
+  v.querySelectorAll("[data-child]").forEach(function(b){
+    b.onclick = function(){ var id = b.getAttribute("data-child"); go("history", id || null); };
+  });
+  v.querySelectorAll("[data-cag]").forEach(function(b){
+    b.onclick = function(){ openCagnotte(b.getAttribute("data-cag")); };
+  });
+
+  /* réunion */
+  v.querySelectorAll("[data-choice]").forEach(function(b){
+    b.onclick = function(){
+      var d = ensureDraft(), id = b.getAttribute("data-id"), m = b.getAttribute("data-choice");
+      d.choices[id].mode = (d.choices[id].mode === m) ? null : m;
+      touch();
+    };
+  });
+  v.querySelectorAll("[data-gift]").forEach(function(i){
+    i.onchange = function(){ ensureDraft().choices[i.getAttribute("data-gift")].gift = i.value; persistLocal(); queueSave(); };
+  });
+  v.querySelectorAll("[data-sanc]").forEach(function(sel){
+    sel.onchange = function(){
+      var d = ensureDraft(), id = sel.getAttribute("data-sanc");
+      d.choices[id].sanction.label = sel.value === "__autre" ? " " : sel.value;
+      touch();
+    };
+  });
+  v.querySelectorAll("[data-sancfree]").forEach(function(i){
+    i.onchange = function(){ ensureDraft().choices[i.getAttribute("data-sancfree")].sanction.label = i.value; persistLocal(); queueSave(); };
+  });
+  v.querySelectorAll("[data-sstart]").forEach(function(i){
+    i.onchange = function(){ ensureDraft().choices[i.getAttribute("data-sstart")].sanction.start = i.value; persistLocal(); queueSave(); };
+  });
+  v.querySelectorAll("[data-send]").forEach(function(i){
+    i.onchange = function(){ ensureDraft().choices[i.getAttribute("data-send")].sanction.end = i.value; persistLocal(); queueSave(); };
+  });
+  v.querySelectorAll("[data-axe]").forEach(function(b){
+    b.onclick = function(){
+      var d = ensureDraft(), id = b.getAttribute("data-id");
+      var val = b.getAttribute("data-axe") === "1";
+      d.choices[id].axisDone = (d.choices[id].axisDone === val) ? null : val;
+      touch();
+    };
+  });
+  v.querySelectorAll("[data-nextaxe]").forEach(function(i){
+    i.onchange = function(){ ensureDraft().choices[i.getAttribute("data-nextaxe")].nextAxis = i.value; persistLocal(); queueSave(); };
+  });
+  v.querySelectorAll("[data-axeprop]").forEach(function(b){
+    b.onclick = function(){
+      var id = b.getAttribute("data-axeprop");
+      var val = b.getAttribute("data-axeval") || b.textContent;
+      var champ = v.querySelector('[data-nextaxe="' + id + '"]');
+      if(champ){ champ.value = val; ensureDraft().choices[id].nextAxis = val; persistLocal(); queueSave(); render(); }
+    };
+  });
+  var cw = v.querySelector("#closeweek"); if(cw) cw.onclick = closeWeek;
+
+  /* réglages */
+  var ch = v.querySelector("#chpin"); if(ch) ch.onclick = changePin;
+  var tp = v.querySelector("#togglepin"); if(tp) tp.onclick = togglePin;
+  v.querySelectorAll("[data-savepreset]").forEach(function(b){
+    b.onclick = async function(){
+      var k = b.getAttribute("data-savepreset");
+      var ta = v.querySelector('[data-preset="' + k + '"]');
+      var lignes = ta.value.split("\n").map(function(x){ return x.trim(); }).filter(Boolean);
+      var ok = await requirePin("Le code parent est demandé pour modifier les listes.", true); if(!ok) return;
+      S.presets[k] = lignes;
+      touch(); toast("Liste enregistrée");
+    };
+  });
+  v.querySelectorAll("[data-editchild]").forEach(function(b){
+    b.onclick = function(){ editChild(b.getAttribute("data-editchild")); };
+  });
+  v.querySelectorAll("[data-delchild]").forEach(function(b){
+    b.onclick = function(){ removeChildFiche(b.getAttribute("data-delchild")); };
+  });
+  var ac = v.querySelector("#addchild"); if(ac) ac.onclick = addChild;
+  var ip = v.querySelector("#invparent");
+  if(ip) ip.onclick = async function(){
+    var ok = await requirePin("Le code parent est demandé pour inviter quelqu'un.", true); if(!ok) return;
+    inviterQuelquun("parent");
+  };
+  var ie = v.querySelector("#invenfant");
+  if(ie) ie.onclick = async function(){
+    var ok = await requirePin("Le code parent est demandé pour créer un accès.", true); if(!ok) return;
+    inviterQuelquun("enfant");
+  };
+  var sf = v.querySelector("#savefam");
+  if(sf) sf.onclick = async function(){
+    // Les valeurs sont relevées tout de suite : demander le code ouvre une
+    // fenêtre, et l'écran peut être redessiné entre-temps.
+    var saisi = {
+      famille: v.querySelector("#stfam").value.trim(),
+      unite:   v.querySelector("#stuni").value.trim(),
+      nom:     v.querySelector("#stunom").value.trim(),
+      cadeau:  v.querySelector("#stcad").checked
+    };
+    var ok = await requirePin("Le code parent est demandé pour modifier ces réglages.", true); if(!ok) return;
+    S.famille        = saisi.famille || S.famille;
+    S.unite          = saisi.unite   || S.unite;
+    S.uniteNom       = saisi.nom     || S.uniteNom;
+    S.cadeauPossible = saisi.cadeau;
+    touch(); toast("Enregistré");
+  };
+  var st = v.querySelector("#savethr");
+  if(st) st.onclick = async function(){
+    var lu = {
+      warn:   parseInt(v.querySelector("#tw").value, 10),
+      punish: parseInt(v.querySelector("#tp").value, 10),
+      palier: parseInt(v.querySelector("#pal").value, 10),
+      valeur: parseInt(v.querySelector("#palv").value, 10)
+    };
+    var ok = await requirePin("Le code parent est demandé pour modifier les seuils.", true); if(!ok) return;
+    S.thresholds.warn   = lu.warn   || -3;
+    S.thresholds.punish = lu.punish || -5;
+    S.palier            = lu.palier || 5;
+    S.palierValue       = lu.valeur || 5;
+    touch(); toast("Seuils enregistrés");
+  };
+  var sn = v.querySelector("#savename");
+  if(sn) sn.onclick = function(){
+    var mail = meEmail(); if(!mail) return;
+    var val = v.querySelector("#myname").value.trim();
+    if(!val) return;
+    S.parentNames[mail] = val; touch(); toast("Nom enregistré");
+  };
+  var an = v.querySelector("#asknotif");
+  if(an) an.onclick = function(){
+    if(!("Notification" in window)) return;
+    Notification.requestPermission().then(function(){ render(); });
+  };
+  var lo = v.querySelector("#logout"); if(lo) lo.onclick = logout;
+  var fd = v.querySelector("#fairedon"); if(fd) fd.onclick = function(){ ouvrirDon("reglages"); };
+  var vd = v.querySelector("#voirdonnees"); if(vd) vd.onclick = pageDonnees;
+  var qf = v.querySelector("#quitterfam");   if(qf) qf.onclick = quitterLaFamille;
+  var sf2 = v.querySelector("#suppfam");     if(sf2) sf2.onclick = supprimerLaFamille;
+  var sc = v.querySelector("#suppcompte");   if(sc) sc.onclick = supprimerMonCompte;
+  var ex = v.querySelector("#exp"); if(ex) ex.onclick = exportBackup;
+  var im = v.querySelector("#imp"); if(im) im.onclick = importBackup;
+  var ins = v.querySelector("#inst"); if(ins) ins.onclick = lancerInstall;
+  var insh = v.querySelector("#insthelp"); if(insh) insh.onclick = aideInstall;
+}
+
+/* ====================== RÉGLAGES : ACTIONS ====================== */
+async function togglePin(){
+  if(S.pinEnabled){
+    var ok = await requirePin("Saisis le code pour le désactiver.", true);
+    if(!ok) return;
+    S.pinEnabled = false; touch(); toast("Code désactivé — les points se valident en un clic");
+  }else{
+    S.pinEnabled = true; markUnlocked(); touch();
+    toast("Code réactivé — il sera demandé au prochain point");
+  }
+}
+async function changePin(){
+  var ok = await requirePin("Saisis d'abord le code actuel.", true); if(!ok) return;
+  openModal('<header><h3>Nouveau code parent</h3><p>4 chiffres.</p></header>' +
+    '<div class="content"><div class="field"><label for="np">Nouveau code</label><input class="input mono" id="np" inputmode="numeric" maxlength="4" data-autofocus></div></div>' +
+    '<footer><button class="btn ghost" id="cancel">Annuler</button><button class="btn primary" id="ok">Enregistrer</button></footer>',
+    function(root){
+      root.querySelector("#cancel").onclick = closeModal;
+      root.querySelector("#ok").onclick = function(){
+        var val = root.querySelector("#np").value.trim();
+        if(!/^[0-9]{4}$/.test(val)) return;
+        S.pin = val; closeModal(); touch(); toast("Code mis à jour");
+      };
+    });
+}
+async function addChild(){
+  var ok = await requirePin("Le code parent est demandé pour ajouter un enfant.", true); if(!ok) return;
+  var prises = {};
+  S.children.forEach(function(x){ prises[x.couleur] = 1; });
+  var couleur = coulLibre(prises);
+  openModal('<header><h3>Ajouter un enfant</h3></header><div class="content">' +
+    '<div class="field"><label for="nn">Prénom</label><input class="input" id="nn" data-autofocus autocomplete="off"></div>' +
+    '<div class="field"><label for="nb">Date de naissance <i>(facultatif)</i></label><input class="input" type="date" id="nb"></div>' +
+    '<div class="field"><label for="nc">Sa couleur</label><select class="input" id="nc">' +
+      COULEURS.map(function(c){
+        return '<option value="' + c.cle + '"' + (c.cle === couleur ? " selected" : "") +
+               (prises[c.cle] ? " disabled" : "") + ">" + c.nom + (prises[c.cle] ? " (prise)" : "") + "</option>";
+      }).join("") + "</select></div>" +
+    '</div><footer><button class="btn ghost" id="cancel">Annuler</button><button class="btn primary" id="ok">Ajouter</button></footer>',
+    function(root){
+      root.querySelector("#cancel").onclick = closeModal;
+      root.querySelector("#ok").onclick = function(){
+        var nom = root.querySelector("#nn").value.trim();
+        if(nom.length < 2){ var i = root.querySelector("#nn"); i.style.borderColor = "var(--dang)"; i.focus(); return; }
+        S.children.push({ id:"c_" + uid(), name:nom, birth:root.querySelector("#nb").value || "",
+                          couleur:root.querySelector("#nc").value });
+        closeModal(); touch(); toast(nom + " a rejoint le tableau");
+      };
+    });
+}
+
+async function removeChildFiche(id){
+  var c = child(id); if(!c) return;
+  if(S.children.length <= 1){ toast("Il doit rester au moins un enfant"); return; }
+  var ok = await requirePin("Le code parent est demandé pour retirer un enfant.", true); if(!ok) return;
+  var pts = eventsOfWeek(S.weekStart, id).length, sous = cagnotteOf(id);
+  openModal('<header><h3>Retirer ' + esc(c.name) + ' ?</h3>' +
+    '<p>Sa fiche, ses ' + pts + ' ligne' + (pts > 1 ? "s" : "") + ' de la semaine et sa réserve de ' +
+    fMontant(sous) + ' disparaissent du tableau. C\'est sans retour — sauf à restaurer une sauvegarde.</p></header>' +
+    '<footer><button class="btn ghost" id="cancel">Annuler</button><button class="btn danger" id="ok">Retirer</button></footer>',
+    function(root){
+      root.querySelector("#cancel").onclick = closeModal;
+      root.querySelector("#ok").onclick = function(){
+        // Les lignes sont marquées supprimées, jamais retirées du tableau :
+        // c'est ainsi que l'effacement remonte au serveur et arrive sur l'autre
+        // téléphone. Les retirer localement les ferait revenir au prochain échange.
+        S.children = S.children.filter(function(x){ return x.id !== id; });
+        S.events.forEach(function(e){      if(e.child === id) e.deleted = true; });
+        S.cagnotteLog.forEach(function(l){ if(l.child === id) l.deleted = true; });
+        S.sanctions.forEach(function(x){   if(x.child === id) x.deleted = true; });
+        if(S.axes) delete S.axes[id];
+        if(S.draft && S.draft.choices) delete S.draft.choices[id];
+        if(UI.child === id){ UI.child = null; UI.view = "home"; }
+        closeModal(); touch(); toast(c.name + " a été retiré");
+      };
+    });
+}
+
+async function editChild(id){
+  var ok = await requirePin("Le code parent est demandé pour modifier une fiche enfant.", true); if(!ok) return;
+  var c = child(id);
+  var prises = {};
+  S.children.forEach(function(x){ if(x.id !== id) prises[x.couleur] = x.name; });
+  openModal('<header><h3>' + esc(c.name) + '</h3></header><div class="content">' +
+    '<div class="field"><label for="nm">Prénom</label><input class="input" id="nm" value="' + esc(c.name) + '" data-autofocus></div>' +
+    '<div class="field"><label for="bd">Date de naissance</label><input class="input" type="date" id="bd" value="' + esc(c.birth) + '"></div>' +
+    '<div class="field"><label>Sa couleur</label><div class="nuancier">' +
+      COULEURS.map(function(x){
+        return '<button type="button" class="nuance col-' + x.cle + '" data-couleur="' + x.cle + '"' +
+               ' aria-pressed="' + (c.couleur === x.cle) + '"' +
+               (prises[x.cle] ? ' title="Déjà prise par ' + esc(prises[x.cle]) + '"' : ' title="' + x.nom + '"') +
+               '><span class="pastille"></span>' + x.nom +
+               (prises[x.cle] ? ' <i>· ' + esc(prises[x.cle]) + "</i>" : "") + "</button>";
+      }).join("") +
+    "</div></div>" +
+    '</div><footer><button class="btn ghost" id="cancel">Annuler</button><button class="btn primary" id="ok">Enregistrer</button></footer>',
+    function(root){
+      var choisie = c.couleur;
+      root.querySelectorAll("[data-couleur]").forEach(function(b){
+        b.onclick = function(){
+          choisie = b.getAttribute("data-couleur");
+          root.querySelectorAll("[data-couleur]").forEach(function(x){
+            x.setAttribute("aria-pressed", String(x.getAttribute("data-couleur") === choisie));
+          });
+        };
+      });
+      root.querySelector("#cancel").onclick = closeModal;
+      root.querySelector("#ok").onclick = function(){
+        c.name    = root.querySelector("#nm").value.trim() || c.name;
+        c.birth   = root.querySelector("#bd").value || c.birth;
+        c.couleur = choisie || c.couleur;
+        closeModal(); touch(); toast("Enregistré");
+      };
+    });
+}
+function exportBackup(){
+  var data = JSON.stringify(S, null, 2);
+  var fname = "trophee-pernin-" + todayISO() + ".json";
+  try{
+    var url = URL.createObjectURL(new Blob([data], { type:"application/json" }));
+    var a = document.createElement("a");
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    toast("Sauvegarde téléchargée");
+    return;
+  }catch(e){}
+  openModal('<header><h3>Sauvegarde</h3><p>Copie ce texte et garde-le en lieu sûr.</p></header>' +
+    '<div class="content"><textarea class="input mono" rows="10" data-autofocus>' + esc(data) + "</textarea></div>" +
+    '<footer><button class="btn primary" id="ok">Fermer</button></footer>',
+    function(root){ root.querySelector("#ok").onclick = closeModal; });
+}
+async function importBackup(){
+  var ok = await requirePin("Le code parent est demandé pour restaurer une sauvegarde.", true); if(!ok) return;
+  openModal('<header><h3>Restaurer</h3><p>Colle ici le contenu d\'une sauvegarde. Les données actuelles seront fusionnées avec celles de la sauvegarde.</p></header>' +
+    '<div class="content"><textarea class="input mono" id="src" rows="8" data-autofocus placeholder=\'{"v":1,...}\'></textarea></div>' +
+    '<footer><button class="btn ghost" id="cancel">Annuler</button><button class="btn primary" id="ok">Restaurer</button></footer>',
+    function(root){
+      root.querySelector("#cancel").onclick = closeModal;
+      root.querySelector("#ok").onclick = function(){
+        var parsed = readJSON(root.querySelector("#src").value);
+        if(!parsed || !Array.isArray(parsed.events)){ root.querySelector("#src").style.borderColor = "var(--dang)"; return; }
+        S = migrate(merge(S, parsed));
+        closeModal(); touch(); toast("Sauvegarde restaurée");
+      };
+    });
+}
+
+/* ====================== DÉMARRAGE ====================== */
+var booted = false;
+function startApp(){
+  if(booted) return; booted = true;
+  try{ boot(); }
+  catch(e){
+    el("view").innerHTML = '<div class="panel"><div class="empty">Une erreur est survenue au chargement : ' + esc(e && e.message) + "</div></div>";
+  }
+}
+if(window.FBLIB) startApp();
+else{
+  window.addEventListener("fblib-ready", startApp, { once:true });
+  setTimeout(startApp, 8000);
+}
+
+/* ====================== LOUPE ====================== */
+var ZOOM_KEY = "trophee-pernin/loupe";
+var zoomNiveau = 1;
+var zoomNatif = (window.CSS && CSS.supports && CSS.supports("zoom", "1.5"));
+
+function appliqueZoom(){
+  var z = el("zoomable"); if(!z) return;
+  if(zoomNatif) z.style.zoom = zoomNiveau;
+  else document.body.style.setProperty("--zoom", zoomNiveau);
+  var v = el("zoomval");
+  if(v) v.textContent = Math.round(zoomNiveau * 100) + " %";
+  try{ localStorage.setItem(ZOOM_KEY, String(zoomNiveau)); }catch(e){}
+}
+function reglerZoom(n){
+  zoomNiveau = Math.max(0.6, Math.min(3, Math.round(n * 20) / 20));
+  appliqueZoom();
+}
+function chargerZoom(){
+  var v = parseFloat(localStorage.getItem(ZOOM_KEY) || "1");
+  if(isFinite(v) && v > 0) zoomNiveau = Math.max(0.6, Math.min(3, v));
+  appliqueZoom();
+}
+el("zoombtn").onclick = function(){
+  var b = el("zoombar");
+  b.hidden = !b.hidden;
+  if(!b.hidden) appliqueZoom();
+};
+el("zoombar").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-z]"); if(!b) return;
+  var k = b.getAttribute("data-z");
+  if(k === "+") reglerZoom(zoomNiveau + 0.1);
+  else if(k === "-") reglerZoom(zoomNiveau - 0.1);
+  else if(k === "0") reglerZoom(1);
+  else if(k === "x") el("zoombar").hidden = true;
+});
+document.addEventListener("keydown", function(e){
+  if(el("zoombar").hidden) return;
+  if(e.key === "+" || e.key === "=") reglerZoom(zoomNiveau + 0.1);
+  if(e.key === "-") reglerZoom(zoomNiveau - 0.1);
+  if(e.key === "0") reglerZoom(1);
+});
+chargerZoom();
+
+document.addEventListener("visibilitychange", function(){ if(S) render(); });
+window.addEventListener("focus", function(){ if(S) render(); });
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
+
+})();
+
+</script>
+</body>
+</html>
