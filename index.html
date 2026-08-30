@@ -395,7 +395,9 @@ textarea.input{resize:vertical; min-height:78px; font-family:var(--body)}
 
 /* ============================ MODAL ============================ */
 .backdrop{
-  position:fixed; inset:0; z-index:80; background:rgba(9,11,16,.55);
+  /* Au-dessus de la porte d'entrée (#gate, z-index 100) : sans cela, les pages
+     d'information ouvertes depuis l'écran de connexion s'affichaient derrière. */
+  position:fixed; inset:0; z-index:120; background:rgba(9,11,16,.55);
   display:grid; place-items:center; padding:16px; overflow:auto;
   animation:fade .16s ease;
 }
@@ -633,18 +635,20 @@ button.chip.btnlike:hover{border-color:var(--brass); filter:brightness(1.03)}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
 import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword,
          createUserWithEmailAndPassword, sendPasswordResetEmail, sendEmailVerification,
-         deleteUser, signOut, onAuthStateChanged }
+         deleteUser, signOut, onAuthStateChanged, reload,
+         verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential }
   from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-         doc, collection, setDoc, getDoc, deleteDoc, onSnapshot }
+         doc, collection, setDoc, getDoc, getDocs, deleteDoc, onSnapshot }
   from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
 window.FBLIB = {
   initializeApp, getAuth, setPersistence, browserLocalPersistence,
   signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail,
-  sendEmailVerification, deleteUser, signOut, onAuthStateChanged,
+  sendEmailVerification, deleteUser, signOut, onAuthStateChanged, reload,
+  verifyBeforeUpdateEmail, EmailAuthProvider, reauthenticateWithCredential,
   getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-  doc, collection, setDoc, getDoc, deleteDoc, onSnapshot
+  doc, collection, setDoc, getDoc, getDocs, deleteDoc, onSnapshot
 };
 window.dispatchEvent(new Event("fblib-ready"));
 </script>
@@ -1088,8 +1092,7 @@ function boot(){
     FBLIB.onAuthStateChanged(fb.auth, function(user){
       fb.user = user || null;
       if(user){
-        if(MULTI){ suivreAppartenance(user); }
-        else{ hideGate(); checkWriteAccess(user); startSync(); }
+        entrerAvecUtilisateur(user);
       }
       else{
         stopSync(); arreterAppartenance();
@@ -1445,6 +1448,23 @@ function arreterAppartenance(){
   if(fb.unsubMembres){ try{ fb.unsubMembres(); }catch(e){} fb.unsubMembres = null; }
 }
 
+/* Le chemin d'entrée, une fois l'identité connue. Passe par la porte de
+   confirmation si l'adresse n'est pas encore validée. Appelé au démarrage, et
+   de nouveau quand la personne revient de sa boîte aux lettres — sans recharger
+   la page, pour ne pas perdre la session en route. */
+function entrerAvecUtilisateur(user){
+  if(!user) return;
+  if(doitConfirmerSonAdresse(user)){
+    stopSync(); arreterAppartenance();
+    moi = { famille:null, role:null }; MEMBRES = []; CODES = [];
+    cloudOn = false; setStatus("off");
+    showGate("verif"); render();
+    return;
+  }
+  if(MULTI){ suivreAppartenance(user); }
+  else{ hideGate(); checkWriteAccess(user); startSync(); }
+}
+
 function suivreAppartenance(user){
   arreterAppartenance();
   fb.unsubMoi = FBLIB.onSnapshot(
@@ -1488,6 +1508,8 @@ function entrerDansLaFamille(user, famille, role){
   checkWriteAccess(user);
   startSync();
   suivreMembres(famille);
+  CODES = [];
+  if(role === "parent") chargerCodes();
   render();
 }
 
@@ -1500,6 +1522,7 @@ function suivreMembres(famille){
       snap.forEach(function(d){ var v = d.data() || {}; v.uid = d.id; out.push(v); });
       out.sort(function(a,b){ return (a.email || "") < (b.email || "") ? -1 : 1; });
       MEMBRES = out;
+      rafraichirMonEmail();
       if(UI.view === "settings") render();
     },
     function(){}
@@ -1509,6 +1532,19 @@ function suivreMembres(famille){
 function nouvelIdFamille(){
   return "f" + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 }
+/* La confirmation de l'adresse est obligatoire pour tout compte ouvert à partir
+   de cette date. Les familles inscrites avant gardent l'ancien régime — un
+   simple bandeau — pour ne pas se retrouver enfermées dehors du jour au
+   lendemain. En cas de doute sur la date de création, on ne bloque personne. */
+var VERIF_DEPUIS = Date.parse("2026-08-31T00:00:00Z");
+
+function doitConfirmerSonAdresse(user){
+  if(!MULTI || !user || user.emailVerified) return false;
+  var ne = (user.metadata && user.metadata.creationTime) ? Date.parse(user.metadata.creationTime) : 0;
+  if(!ne || isNaN(ne)) return false;
+  return ne >= VERIF_DEPUIS;
+}
+
 var ALPHABET_CODE = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";   // sans I, O, 0, 1 : illisibles
 function nouveauCode(){
   var out = "";
@@ -1529,7 +1565,8 @@ function creerMaFamille(bouton, erreur){
     })
     .then(function(){
       return FBLIB.setDoc(FBLIB.doc(fb.db, "utilisateurs", user.uid),
-                          { famille: id, role: "parent", email: user.email || "", at: nowISO() });
+                          { famille: id, role: "parent", email: user.email || "", at: nowISO() },
+                          { merge: true });
     })
     .then(function(){
       // le suivi d'appartenance prend le relais et lance l'assistant
@@ -1550,34 +1587,80 @@ function rejoindreAvecCode(code, bouton, erreur){
       if(!snap.exists()) throw { code: "invitation-inconnue" };
       var inv = snap.data() || {};
       if(!inv.famille) throw { code: "invitation-incomplete" };
+      if(typeof inv.expire !== "number") throw { code: "invitation-perimee" };
+      if(inv.expire <= Date.now())        throw { code: "invitation-perimee" };
       return FBLIB.setDoc(FBLIB.doc(fb.db, "familles", inv.famille, "membres", user.uid),
                           { email: user.email || "", role: inv.role || "parent", code: code, at: nowISO() })
         .then(function(){
           return FBLIB.setDoc(FBLIB.doc(fb.db, "utilisateurs", user.uid),
                               { famille: inv.famille, role: inv.role || "parent",
-                                email: user.email || "", at: nowISO() });
+                                email: user.email || "", at: nowISO() },
+                              { merge: true });
+        })
+        .then(function(){
+          // Le code a servi : on le brûle. C'est possible maintenant, et pas avant,
+          // parce que la carte de membre vient d'être créée — le serveur n'accepte
+          // cette suppression que d'un membre de la famille concernée.
+          return brulerCode(code);
         });
     })
     .catch(function(err){
       if(bouton){ bouton.disabled = false; bouton.textContent = "Rejoindre"; }
       if(!erreur) return;
       var c = err && err.code;
-      erreur.textContent = (c === "invitation-inconnue")
-        ? "Ce code n'existe pas, ou il a été annulé."
-        : "Impossible de rejoindre cette famille (" + (c || "erreur") + ").";
+      erreur.textContent =
+        (c === "invitation-inconnue") ? "Ce code n'existe pas, il a déjà servi, ou il a été annulé."
+      : (c === "invitation-perimee")  ? "Ce code a expiré. Demande-en un nouveau : ils ne valent que 48 heures."
+      : "Impossible de rejoindre cette famille (" + (c || "erreur") + ").";
     });
 }
+
+/* Un code ne sert qu'une fois : il est effacé dès qu'il a été employé. Si cette
+   suppression échoue (réseau coupé au mauvais moment), le code reste valable
+   jusqu'à son expiration — 48 heures au maximum, jamais au-delà. */
+function brulerCode(code){
+  return FBLIB.deleteDoc(FBLIB.doc(fb.db, "invitations", code))
+    .catch(function(){
+      return new Promise(function(r){ setTimeout(r, 1500); })
+        .then(function(){ return FBLIB.deleteDoc(FBLIB.doc(fb.db, "invitations", code)); })
+        .catch(function(){});
+    });
+}
+
+/* Un code d'invitation vit 48 heures et ne sert qu'une fois. Les deux limites
+   sont vérifiées par le serveur, pas seulement par cette page. */
+var INVIT_HEURES = 48;
+var INVIT_MS = INVIT_HEURES * 3600000;
+var CODES = [];          // les codes émis par la famille, à l'usage des parents
+var codesEnCours = false;
 
 function inviterQuelquun(role){
   if(!moi.famille || readOnly) return;
   var code = nouveauCode();
-  FBLIB.setDoc(FBLIB.doc(fb.db, "invitations", code),
-               { famille: moi.famille, role: role, par: meEmail() || "", at: nowISO() })
-    .then(function(){ montrerInvitation(code, role); })
+  var expire = Date.now() + INVIT_MS;
+  var fiche = { famille: moi.famille, role: role, par: meEmail() || "", at: nowISO(), expire: expire };
+  FBLIB.setDoc(FBLIB.doc(fb.db, "invitations", code), fiche)
+    .then(function(){
+      // Un double dans la branche de la famille. C'est le seul moyen pour les
+      // parents de retrouver et d'annuler un code : la liste des invitations est
+      // volontairement illisible, sinon n'importe qui pourrait la parcourir.
+      return FBLIB.setDoc(FBLIB.doc(fb.db, "familles", moi.famille, "codes", code),
+                          { role: role, par: fiche.par, at: fiche.at, expire: expire });
+    })
+    .then(function(){ montrerInvitation(code, role, expire); chargerCodes(); })
     .catch(function(err){ toast("L'invitation n'a pas pu être créée (" + ((err && err.code) || "erreur") + ")"); });
 }
 
-function montrerInvitation(code, role){
+function finValidite(expire){
+  if(typeof expire !== "number") return "";
+  var reste = expire - Date.now();
+  if(reste <= 0) return "expiré";
+  var h = Math.floor(reste / 3600000);
+  if(h >= 1) return "valable encore " + h + " h";
+  return "valable encore " + Math.max(1, Math.round(reste / 60000)) + " min";
+}
+
+function montrerInvitation(code, role, expire){
   var quoi = (role === "parent")
     ? "Le deuxième parent aura les mêmes droits que toi."
     : "Ce compte pourra tout consulter, sans rien pouvoir modifier ni supprimer.";
@@ -1585,7 +1668,10 @@ function montrerInvitation(code, role){
     '<header><h3>Code d\'invitation</h3><p>' + esc(quoi) + '</p></header>' +
     '<div class="content"><div class="codebox mono" id="codeaff">' + esc(code) + "</div>" +
     '<p class="aide">La personne crée son compte sur la même adresse, choisit <b>Rejoindre une famille</b> ' +
-    'et saisit ce code. Il ne sert qu\'une fois par personne ; garde-le pour toi.</p>' +
+    'et saisit ce code.</p>' +
+    '<p class="aide"><b>Il ne sert qu\'une fois et expire dans ' + INVIT_HEURES + ' heures.</b> ' +
+    'Passé ce délai, ou dès que quelqu\'un l\'a utilisé, il ne vaut plus rien. ' +
+    'Tu peux aussi l\'annuler à tout moment depuis Réglages.</p>' +
     '<div class="err" id="copieok"></div></div>' +
     '<footer><button class="btn" id="copier">Copier</button>' +
     '<button class="btn primary" id="ok">Fermer</button></footer>',
@@ -1601,6 +1687,48 @@ function montrerInvitation(code, role){
       };
     }
   );
+}
+
+/* On lit les doubles rangés dans la famille, puis on demande à chacun s'il a
+   encore son invitation : celle qui a disparu a servi. */
+function chargerCodes(){
+  if(!MULTI || !moi.famille || !fb.db || codesEnCours) return;
+  codesEnCours = true;
+  FBLIB.getDocs(FBLIB.collection(fb.db, "familles", moi.famille, "codes"))
+    .then(function(snap){
+      var lignes = [];
+      snap.forEach(function(d){ var v = d.data() || {}; v.code = d.id; lignes.push(v); });
+      lignes.sort(function(a, b){ return (b.at || "") < (a.at || "") ? -1 : 1; });
+      return Promise.all(lignes.map(function(l){
+        return FBLIB.getDoc(FBLIB.doc(fb.db, "invitations", l.code))
+          .then(function(s){ l.vivant = s.exists(); return l; })
+          .catch(function(){ l.vivant = false; return l; });
+      }));
+    })
+    .then(function(lignes){
+      CODES = lignes || [];
+      codesEnCours = false;
+      if(UI.view === "settings") render();
+    })
+    .catch(function(){ codesEnCours = false; });
+}
+
+function etatCode(c){
+  if(!c.vivant) return { texte: "utilisé ou annulé", mort: true };
+  if(typeof c.expire === "number" && c.expire <= Date.now()) return { texte: "expiré", mort: true };
+  return { texte: finValidite(c.expire), mort: false };
+}
+
+function revoquerCode(code){
+  if(!moi.famille || readOnly) return;
+  Promise.all([
+    FBLIB.deleteDoc(FBLIB.doc(fb.db, "invitations", code)).catch(function(){}),
+    FBLIB.deleteDoc(FBLIB.doc(fb.db, "familles", moi.famille, "codes", code)).catch(function(){})
+  ]).then(function(){
+    CODES = CODES.filter(function(c){ return c.code !== code; });
+    toast("Code annulé.");
+    render();
+  });
 }
 
 /* ====================== MON COMPTE ET MES DONNÉES ====================
@@ -1637,6 +1765,13 @@ function cheminsDeLaFamille(fam){
     out.push(["familles", fam, "membres", m.uid]);
     out.push(["familles", fam, "presence", m.uid]);
   });
+  // Les codes d'invitation encore en circulation partent avec la famille,
+  // sinon ils resteraient à pointer vers une branche disparue.
+  CODES.forEach(function(c){
+    if(!c || !c.code) return;
+    out.push(["familles", fam, "codes", c.code]);
+    out.push(["invitations", c.code]);
+  });
   return out;
 }
 
@@ -1653,6 +1788,7 @@ async function effacerToutLaFamille(fam){
 function oublierLaFamilleLocalement(){
   moi = { famille:null, role:null };
   MEMBRES = [];
+  CODES = [];
   // Une sauvegarde encore en attente recréerait la famille qu'on vient
   // d'effacer : on coupe le minuteur et on débranche la cible.
   clearTimeout(saveTimer);
@@ -1790,31 +1926,178 @@ function confirmerAvecMot(titre, texte, mot, motBouton){
 }
 
 /* --- ce que l'application enregistre --- */
+/* ====================== CHANGER SON ADRESSE E-MAIL ======================
+   Une faute de frappe à l'inscription enfermait la personne dehors : elle ne
+   pouvait ni confirmer son adresse, ni récupérer son mot de passe. Firebase
+   envoie le message de confirmation à la NOUVELLE adresse, et n'applique le
+   changement qu'une fois le lien ouvert : tant que ce n'est pas fait, on se
+   connecte encore avec l'ancienne. */
+function changerAdresse(depuisLaPorte){
+  var user = fb.user; if(!user) return;
+  openModal(
+    '<header><h3>Changer mon adresse e-mail</h3>' +
+    '<p>Actuellement : <b>' + esc(user.email || "inconnue") + '</b></p></header>' +
+    '<div class="content">' +
+      '<div class="field"><label for="ca-mail">Nouvelle adresse</label>' +
+      '<input class="input" type="email" id="ca-mail" autocomplete="email" data-autofocus></div>' +
+      '<div class="field"><label for="ca-pw">Ton mot de passe actuel</label>' +
+      '<input class="input" type="password" id="ca-pw" autocomplete="current-password"></div>' +
+      '<p class="aide">Le mot de passe est demandé par sécurité : il empêche quelqu\'un ' +
+      'qui trouverait ton téléphone déverrouillé de détourner ton compte.</p>' +
+      '<p class="aide">Un message partira vers la <b>nouvelle</b> adresse. Le changement ne prendra effet ' +
+      'qu\'une fois son lien ouvert — d\'ici là, continue à te connecter avec l\'ancienne.</p>' +
+      '<div class="err" id="ca-err"></div>' +
+    "</div>" +
+    '<footer><button class="btn ghost" id="ca-non">Annuler</button>' +
+    '<button class="btn primary" id="ca-oui">Envoyer</button></footer>',
+    function(root){
+      var err = root.querySelector("#ca-err");
+      root.querySelector("#ca-non").onclick = closeModal;
+      root.querySelector("#ca-oui").onclick = function(){
+        var b = root.querySelector("#ca-oui");
+        var mail = (root.querySelector("#ca-mail").value || "").trim();
+        var pw   = root.querySelector("#ca-pw").value || "";
+        err.textContent = "";
+        if(!mail || mail.indexOf("@") < 1){ err.textContent = "Cette adresse n'est pas valide."; return; }
+        if(mail.toLowerCase() === String(user.email || "").toLowerCase()){
+          err.textContent = "C'est déjà ton adresse actuelle."; return;
+        }
+        if(!pw){ err.textContent = "Il manque ton mot de passe."; return; }
+        b.disabled = true; b.textContent = "Envoi…";
+        var cred = FBLIB.EmailAuthProvider.credential(user.email, pw);
+        FBLIB.reauthenticateWithCredential(user, cred)
+          .then(function(){ return FBLIB.verifyBeforeUpdateEmail(user, mail); })
+          .then(function(){
+            closeModal();
+            openModal(
+              '<header><h3>Message envoyé</h3></header>' +
+              '<div class="content"><p>Ouvre le message reçu à <b>' + esc(mail) + '</b> et clique sur son lien. ' +
+              'Ton adresse changera à ce moment-là, et elle sera confirmée du même coup.</p>' +
+              '<p class="aide">Tant que ce n\'est pas fait, connecte-toi avec ' + esc(user.email || "l'ancienne adresse") + '.</p></div>' +
+              '<footer><button class="btn primary" id="ok">Compris</button></footer>',
+              function(r2){ r2.querySelector("#ok").onclick = function(){
+                closeModal();
+                if(depuisLaPorte) FBLIB.signOut(fb.auth);
+              }; }
+            );
+          })
+          .catch(function(e){
+            b.disabled = false; b.textContent = "Envoyer";
+            err.textContent = authMessage(e && e.code);
+          });
+      };
+    }
+  );
+}
+
+/* Après un changement d'adresse, la carte de membre porte encore l'ancienne.
+   On la remet d'aplomb à la connexion suivante — seul un parent en a le droit. */
+function rafraichirMonEmail(){
+  if(!MULTI || !fb.user || !moi.famille || moi.role !== "parent") return;
+  var vrai = fb.user.email || "";
+  var carte = MEMBRES.filter(function(m){ return m.uid === fb.user.uid; })[0];
+  if(!carte || !vrai || carte.email === vrai) return;
+  FBLIB.setDoc(FBLIB.doc(fb.db, "familles", moi.famille, "membres", fb.user.uid),
+               { email: vrai, role: "parent", at: nowISO() }).catch(function(){});
+  FBLIB.setDoc(FBLIB.doc(fb.db, "utilisateurs", fb.user.uid),
+               { famille: moi.famille, role: "parent", email: vrai, at: nowISO() },
+               { merge: true }).catch(function(){});
+}
+
+/* ====================== LES DEUX PAGES D'INFORMATION ======================
+   Version datée : c'est elle qui est enregistrée avec l'acceptation, pour
+   savoir plus tard quel texte la personne avait sous les yeux. */
+var CGU_VERSION = "2026-08-30";
+var CONTACT_MAIL = "clementpernin@hotmail.com";
+
+function texteDonnees(){
+  return '<h4 style="margin:0 0 6px">Ce qui est enregistré</h4>' +
+    '<p class="aide">L\'adresse e-mail de chaque compte. Le nom que la famille se donne. Le prénom de chaque ' +
+    'enfant, et sa date de naissance si elle est renseignée. Chaque point, avec son explication, sa date et ' +
+    'le nom de la personne qui l\'a mis. Les réserves, les sanctions, les axes et les semaines archivées. ' +
+    'Le code parent à quatre chiffres. La date de dernier passage de chaque appareil connecté.</p>' +
+
+    '<h4 style="margin:14px 0 6px">Pourquoi</h4>' +
+    '<p class="aide">Uniquement pour faire fonctionner le tableau de la famille et le retrouver d\'un appareil ' +
+    'à l\'autre. Rien d\'autre. Ce traitement repose sur l\'exécution du service que tu demandes en créant ton ' +
+    'compte, et sur ton accord donné à l\'inscription.</p>' +
+
+    '<h4 style="margin:14px 0 6px">Où</h4>' +
+    '<p class="aide">Dans Google Cloud Firestore, dans des centres de données <b>situés en Europe</b> ' +
+    '(région eur3). Les pages de l\'application, elles, sont servies par GitHub Pages. ' +
+    'Chaque famille a sa propre branche : personne ne peut lire celle d\'une autre, et c\'est le serveur ' +
+    'qui l\'empêche, pas seulement l\'affichage.</p>' +
+
+    '<h4 style="margin:14px 0 6px">Qui peut les lire</h4>' +
+    '<p class="aide">Les membres de ta famille, chacun selon son rôle. Google, comme prestataire technique ' +
+    'd\'hébergement. Et — <b>disons-le franchement</b> — la personne qui édite l\'application dispose d\'un ' +
+    'accès d\'administration à la base : c\'est ce qui lui permet de dépanner, et c\'est aussi une limite ' +
+    'qu\'il faut connaître. Personne d\'autre.</p>' +
+
+    '<h4 style="margin:14px 0 6px">Combien de temps</h4>' +
+    '<p class="aide">Tant que la famille garde son compte : il n\'y a <b>aucun effacement automatique</b>. ' +
+    'La suppression est immédiate et définitive dès qu\'elle est demandée depuis Réglages → Mon compte.</p>' +
+
+    '<h4 style="margin:14px 0 6px">Ce qui n\'est pas fait</h4>' +
+    '<p class="aide">Aucune publicité, aucun traceur, aucune mesure d\'audience, aucune revente, aucun ' +
+    'partage avec un tiers. Aucun profilage, aucune décision automatisée.</p>' +
+
+    '<h4 style="margin:14px 0 6px">Tes droits</h4>' +
+    '<p class="aide">Tu peux à tout moment consulter tes données (elles sont toutes à l\'écran), les corriger, ' +
+    'les emporter (Réglages → Sauvegarde, au format JSON) et les effacer (Réglages → Mon compte). ' +
+    'Pour toute question : <b>' + CONTACT_MAIL + '</b>. ' +
+    'Si une réponse ne te convient pas, tu peux saisir la CNIL — <b>cnil.fr</b>.</p>' +
+
+    '<h4 style="margin:14px 0 6px">Les enfants</h4>' +
+    '<p class="aide">Les données concernant les enfants sont saisies par leurs parents, sur leurs propres ' +
+    'enfants. Un compte « consultation seule » peut leur être ouvert pour qu\'ils voient leurs points. ' +
+    'Une précision honnête : ces données existent, même si elles ne sortent pas de la famille. ' +
+    'N\'écris dans les explications que ce que tu accepterais de relire à voix haute avec eux.</p>' +
+
+    '<p class="aide" style="margin-top:16px;opacity:.75">Version du ' + CGU_VERSION + '.</p>';
+}
+
 function pageDonnees(){
   openModal(
     '<header><h3>Ce que l\'application enregistre</h3>' +
     '<p>En clair, sans détour.</p></header>' +
+    '<div class="content" style="max-height:60vh;overflow:auto">' + texteDonnees() + "</div>" +
+    '<footer><button class="btn primary" id="ok">Fermer</button></footer>',
+    function(root){ root.querySelector("#ok").onclick = closeModal; }
+  );
+}
+
+function pageMentions(){
+  openModal(
+    '<header><h3>Mentions légales</h3><p>Qui édite, qui héberge.</p></header>' +
     '<div class="content" style="max-height:60vh;overflow:auto">' +
-      '<h4 style="margin:0 0 6px">Ce qui est enregistré</h4>' +
-      '<p class="aide">L\'adresse e-mail de chaque compte. Le nom que la famille se donne. Le prénom de chaque ' +
-      'enfant, et sa date de naissance si elle est renseignée. Chaque point, avec son explication, sa date et ' +
-      'le nom de la personne qui l\'a mis. Les réserves, les sanctions, les axes et les semaines archivées.</p>' +
-      '<h4 style="margin:14px 0 6px">Où</h4>' +
-      '<p class="aide">Sur Google Cloud Firestore, dans des centres de données <b>situés en Europe</b>. ' +
-      'Chaque famille a son espace : personne ne peut lire celui d\'une autre, et c\'est le serveur qui l\'empêche.</p>' +
-      '<h4 style="margin:14px 0 6px">Combien de temps</h4>' +
-      '<p class="aide">Tant que la famille garde son compte. La suppression est immédiate et définitive dès ' +
-      'qu\'elle est demandée depuis Réglages.</p>' +
-      '<h4 style="margin:14px 0 6px">Ce qui n\'est pas fait</h4>' +
-      '<p class="aide">Aucune publicité, aucun traceur, aucune revente, aucun partage avec qui que ce soit. ' +
-      'Les données ne servent qu\'à faire fonctionner le tableau de la famille.</p>' +
-      '<h4 style="margin:14px 0 6px">Tes droits</h4>' +
-      '<p class="aide">Tu peux à tout moment consulter tes données (elles sont toutes à l\'écran), les corriger, ' +
-      'les exporter (Réglages → Sauvegarde) et les supprimer (Réglages → Mon compte). ' +
-      'Pour toute question : <b>clementpernin@hotmail.com</b>.</p>' +
-      '<h4 style="margin:14px 0 6px">Une précision honnête</h4>' +
-      '<p class="aide">Ce sont des données concernant des enfants. Elles ne sortent pas de la famille, mais ' +
-      'elles existent : n\'écris dans les explications que ce que tu accepterais de relire à voix haute avec eux.</p>' +
+      '<h4 style="margin:0 0 6px">Éditeur</h4>' +
+      '<p class="aide">Application éditée à titre personnel et non professionnel. ' +
+      'Contact : <b>' + CONTACT_MAIL + '</b>.</p>' +
+
+      '<h4 style="margin:14px 0 6px">Hébergement des pages</h4>' +
+      '<p class="aide">GitHub, Inc. — 88 Colin P. Kelly Jr. Street, San Francisco, CA 94107, États-Unis. ' +
+      'github.com</p>' +
+
+      '<h4 style="margin:14px 0 6px">Hébergement des données</h4>' +
+      '<p class="aide">Google Cloud Firestore, région eur3 (Europe). ' +
+      'Google Ireland Limited — Gordon House, Barrow Street, Dublin 4, Irlande.</p>' +
+
+      '<h4 style="margin:14px 0 6px">Conditions d\'utilisation</h4>' +
+      '<p class="aide">L\'application est fournie gratuitement, en l\'état, sans garantie de disponibilité ' +
+      'ni de conservation des données. Fais tes sauvegardes (Réglages → Sauvegarde). ' +
+      'Elle sert à tenir le tableau de points d\'une famille : tout autre usage, et en particulier tout ' +
+      'usage portant sur des personnes qui ne font pas partie de ton foyer, est exclu.</p>' +
+
+      '<h4 style="margin:14px 0 6px">Dons</h4>' +
+      '<p class="aide">Les dons sont facultatifs, sans contrepartie, et n\'ouvrent aucun droit ' +
+      'supplémentaire dans l\'application. Ils ne donnent pas lieu à reçu fiscal.</p>' +
+
+      '<h4 style="margin:14px 0 6px">Données personnelles</h4>' +
+      '<p class="aide">Voir la page <b>Ce que l\'application enregistre</b>, ' +
+      'accessible depuis l\'écran de connexion et depuis Réglages.</p>' +
+
+      '<p class="aide" style="margin-top:16px;opacity:.75">Version du ' + CGU_VERSION + '.</p>' +
     "</div>" +
     '<footer><button class="btn primary" id="ok">Fermer</button></footer>',
     function(root){ root.querySelector("#ok").onclick = closeModal; }
@@ -1938,14 +2221,23 @@ function authMessage(code){
   if(code === "auth/email-already-in-use")   return "Un compte existe déjà avec cette adresse. Connecte-toi.";
   if(code === "auth/weak-password")          return "Mot de passe trop court : six caractères au minimum.";
   if(code === "auth/missing-password")       return "Il manque le mot de passe.";
+  if(code === "auth/requires-recent-login")
+    return "Par sécurité, reconnecte-toi avant de changer ton adresse.";
   return "Connexion impossible (" + (code || "erreur inconnue") + ").";
 }
+var porteAffichee = null;
 function hideGate(){
   var g = el("gate"); if(g) g.hidden = true;
   document.body.style.overflow = "";
+  porteAffichee = null;
 }
 function showGate(kind){
   var g = el("gate"); if(!g) return;
+  // Redessiner une porte déjà à l'écran effacerait ce qui vient d'y être tapé —
+  // un code d'invitation, un message d'erreur. Le serveur peut renvoyer
+  // plusieurs fois le même état : on ne redessine que sur un vrai changement.
+  if(!g.hidden && porteAffichee === kind) return;
+  porteAffichee = kind;
   g.hidden = false;
   document.body.style.overflow = "hidden";
   if(kind === "essai"){
@@ -2007,27 +2299,91 @@ function showGate(kind){
         '<input class="input" type="email" id="sumail" autocomplete="username" required data-autofocus></div>' +
         '<div class="field"><label for="supw">Mot de passe</label>' +
         '<input class="input" type="password" id="supw" autocomplete="new-password" required minlength="6"></div>' +
+        '<label class="check" style="margin:2px 0"><input type="checkbox" id="sucgu">' +
+        "<span>J'ai lu et j'accepte ce que l'application enregistre, et les mentions légales.</span></label>" +
+        '<p class="gatefoot" style="margin:2px 0 10px">' +
+        '<button type="button" class="lien" id="su-donnees">Ce que l\'application enregistre</button> · ' +
+        '<button type="button" class="lien" id="su-mentions">Mentions légales</button></p>' +
         '<div class="err" id="suerr"></div>' +
         '<button class="btn primary" id="subtn" type="submit" style="width:100%">Créer le compte</button>' +
       "</form>" +
       '<p class="gatefoot">Déjà un compte ? <button class="lien" id="su-back">Se connecter</button></p></div>';
     el("su-back").onclick = function(){ showGate("login"); };
+    el("su-donnees").onclick  = pageDonnees;
+    el("su-mentions").onclick = pageMentions;
     el("suform").onsubmit = function(e){
       e.preventDefault();
       var b = el("subtn"), errn = el("suerr");
-      b.disabled = true; b.textContent = "Création…"; errn.textContent = "";
+      errn.textContent = "";
+      if(!el("sucgu").checked){
+        errn.textContent = "Coche la case pour continuer : il faut avoir lu ce qui est enregistré.";
+        return;
+      }
+      b.disabled = true; b.textContent = "Création…";
       FBLIB.createUserWithEmailAndPassword(fb.auth, el("sumail").value.trim(), el("supw").value)
         .then(function(res){
-          // On envoie tout de suite le message de confirmation. L'accès n'est pas
-          // bloqué : un message qui tombe dans les indésirables ne doit pas
-          // empêcher une famille de s'en servir le soir même.
+          // On envoie tout de suite le message de confirmation : depuis le
+          // 31 août, l'accès reste fermé tant que l'adresse n'est pas confirmée.
           try{ FBLIB.sendEmailVerification(res.user).catch(function(){}); }catch(e){}
+          // On garde la trace de ce qui a été accepté, et quand.
+          try{
+            FBLIB.setDoc(FBLIB.doc(fb.db, "utilisateurs", res.user.uid),
+                         { email: res.user.email || "",
+                           cguVersion: CGU_VERSION,
+                           cguAt: nowISO() },
+                         { merge: true }).catch(function(){});
+          }catch(e){}
         })
         .catch(function(err){
           b.disabled = false; b.textContent = "Créer le compte";
           errn.textContent = authMessage(err && err.code);
         });
     };
+    return;
+  }
+  if(kind === "verif"){
+    var adr = (fb.user && fb.user.email) || "ton adresse";
+    g.innerHTML = '<div class="gatecard">' + GATE_LOGO +
+      '<h1>Confirme ton adresse</h1>' +
+      '<p>Un message vient de partir vers <b>' + esc(adr) + '</b>. ' +
+      'Ouvre-le et clique sur le lien, puis reviens ici.</p>' +
+      '<p class="gatefoot" style="margin:0 0 14px">Regarde aussi dans les indésirables : ' +
+      'c\'est là qu\'il atterrit une fois sur deux.</p>' +
+      '<div class="err" id="vferr"></div>' +
+      '<button class="btn primary" id="vf-ok" style="width:100%">J\'ai confirmé</button>' +
+      '<p class="gatefoot"><button class="lien" id="vf-renvoi">Renvoyer le message</button><br>' +
+      '<button class="lien" id="vf-adresse">Ce n\'est pas la bonne adresse</button><br>' +
+      '<button class="lien" id="vf-out">Se déconnecter</button></p></div>';
+
+    var vferr = el("vferr");
+    el("vf-ok").onclick = function(){
+      var b = el("vf-ok");
+      b.disabled = true; b.textContent = "Vérification…"; vferr.textContent = "";
+      FBLIB.reload(fb.user)
+        .then(function(){
+          if(fb.user && fb.user.emailVerified){
+            porteAffichee = null;   // la porte doit pouvoir changer d'écran
+            hideGate();
+            entrerAvecUtilisateur(fb.user);
+            render();
+            return;
+          }
+          b.disabled = false; b.textContent = "J'ai confirmé";
+          vferr.textContent = "Pas encore confirmée. Ouvre le message, puis reviens.";
+        })
+        .catch(function(){
+          b.disabled = false; b.textContent = "J'ai confirmé";
+          vferr.textContent = "Vérification impossible pour l'instant.";
+        });
+    };
+    el("vf-renvoi").onclick = function(){
+      vferr.textContent = "";
+      FBLIB.sendEmailVerification(fb.user)
+        .then(function(){ vferr.textContent = "Message renvoyé."; })
+        .catch(function(err){ vferr.textContent = authMessage(err && err.code); });
+    };
+    el("vf-adresse").onclick = function(){ changerAdresse(true); };
+    el("vf-out").onclick = function(){ FBLIB.signOut(fb.auth); };
     return;
   }
   if(kind === "config"){
@@ -2054,12 +2410,15 @@ function showGate(kind){
     (MULTI
       ? '<p class="gatefoot">Pas encore de compte ? <button class="lien" id="go-signup">En créer un</button><br>' +
         '<button class="lien" id="go-reset">Mot de passe oublié</button><br>' +
-        '<button class="lien" id="go-donnees">Ce que l\'application enregistre</button></p></div>'
+        '<button class="lien" id="go-donnees">Ce que l\'application enregistre</button> · ' +
+        '<button class="lien" id="go-mentions">Mentions légales</button></p></div>'
       : '<p class="gatefoot">Une seule connexion par appareil : tu restes connecté ensuite.</p></div>');
   var lienS = el("go-signup");
   if(lienS) lienS.onclick = function(){ showGate("signup"); };
   var lienD = el("go-donnees");
   if(lienD) lienD.onclick = pageDonnees;
+  var lienM = el("go-mentions");
+  if(lienM) lienM.onclick = pageMentions;
   var lienR = el("go-reset");
   if(lienR) lienR.onclick = function(){
     var mail = (el("mail").value || "").trim();
@@ -3298,8 +3657,33 @@ function viewSettings(){
            "<span>" + esc(m.email || "compte sans adresse") + (moiMeme ? " <i>(toi)</i>" : "") + "</span>" +
            '<span class="r">' + (m.role === "parent" ? "Parent" : "Consultation seule") + "</span></div>";
     });
-    h += "</div>" +
-         '<div class="btnrow" style="margin-top:14px"><button class="btn" id="invparent">Inviter l\'autre parent</button>' +
+    h += "</div>";
+
+    if(!readOnly){
+      var vivants = CODES.filter(function(c){ return !etatCode(c).mort; });
+      var morts   = CODES.filter(function(c){ return  etatCode(c).mort; });
+      h += '<h4 style="font-size:.95rem;margin:18px 0 4px">Codes d\'invitation</h4>' +
+           '<p style="font-size:.85rem;color:var(--ink-2);margin:0 0 10px">Un code ne sert qu\'<b>une seule fois</b> ' +
+           'et expire au bout de <b>' + INVIT_HEURES + ' heures</b>. Tu peux l\'annuler avant.</p>';
+      if(!vivants.length){
+        h += '<p style="font-size:.85rem;color:var(--ink-3);margin:0 0 4px">Aucun code en attente.</p>';
+      }
+      vivants.forEach(function(c){
+        var e = etatCode(c);
+        h += '<div class="membre"><span aria-hidden="true">🔑</span>' +
+             '<span class="mono"><b>' + esc(c.code) + "</b> — " +
+             (c.role === "parent" ? "parent" : "consultation seule") + "</span>" +
+             '<span class="r">' + esc(e.texte) +
+             ' <button class="btn ghost" data-revoque="' + esc(c.code) + '" style="padding:4px 10px;margin-left:8px">Annuler</button></span></div>';
+      });
+      if(morts.length){
+        h += '<p style="font-size:.8rem;color:var(--ink-3);margin:8px 0 0">' + morts.length +
+             (morts.length > 1 ? ' codes plus valables (utilisés, annulés ou expirés). ' : ' code plus valable. ') +
+             '<button class="lien" id="purgecodes">Faire le ménage</button></p>';
+      }
+    }
+
+    h += '<div class="btnrow" style="margin-top:14px"><button class="btn" id="invparent">Inviter l\'autre parent</button>' +
          '<button class="btn ghost" id="invenfant">Créer un accès enfants</button></div>' +
          '<p style="font-size:.82rem;color:var(--ink-2);margin:10px 0 0">Un code d\'invitation s\'affiche : ' +
          'la personne crée son compte sur cette même adresse et le saisit.</p></div>';
@@ -3358,7 +3742,13 @@ function viewSettings(){
     h += '<div class="panel" style="padding:18px; margin-top:16px"><h4 style="font-size:1.05rem">Mon compte et mes données</h4>' +
          '<p style="font-size:.88rem;color:var(--ink-2);margin:6px 0 12px">Tu peux partir quand tu veux, et tout emporter ou tout effacer. ' +
          'Rien n\'est conservé en douce.</p>' +
-         '<div class="btnrow"><button class="btn ghost" id="voirdonnees">Ce que l\'application enregistre</button></div>' +
+         '<p style="font-size:.88rem;color:var(--ink-2);margin:0 0 10px">Connecté avec <b>' +
+         esc((fb.user && fb.user.email) || "—") + "</b>" +
+         (fb.user && fb.user.emailVerified === false ? ' <span style="color:var(--brass)">— adresse non confirmée</span>' : "") +
+         ".</p>" +
+         '<div class="btnrow"><button class="btn ghost" id="voirdonnees">Ce que l\'application enregistre</button>' +
+         '<button class="btn ghost" id="voirmentions">Mentions légales</button></div>' +
+         '<div class="btnrow" style="margin-top:12px"><button class="btn" id="chgmail">Changer mon adresse e-mail</button></div>' +
          '<div class="btnrow" style="margin-top:12px"><button class="btn" id="quitterfam">Quitter cette famille</button></div>' +
          (readOnly ? "" :
            '<div class="btnrow" style="margin-top:12px"><button class="btn danger" id="suppfam">Supprimer la famille et toutes ses données</button></div>') +
@@ -3536,6 +3926,23 @@ function wire(v){
     var ok = await requirePin("Le code parent est demandé pour créer un accès.", true); if(!ok) return;
     inviterQuelquun("enfant");
   };
+  v.querySelectorAll("[data-revoque]").forEach(function(b){
+    b.onclick = async function(){
+      var code = b.getAttribute("data-revoque");
+      var ok = await requirePin("Le code parent est demandé pour annuler une invitation.", true); if(!ok) return;
+      revoquerCode(code);
+    };
+  });
+  var pc = v.querySelector("#purgecodes");
+  if(pc) pc.onclick = function(){
+    var morts = CODES.filter(function(c){ return etatCode(c).mort; });
+    Promise.all(morts.map(function(c){
+      return FBLIB.deleteDoc(FBLIB.doc(fb.db, "familles", moi.famille, "codes", c.code)).catch(function(){});
+    })).then(function(){
+      CODES = CODES.filter(function(c){ return !etatCode(c).mort; });
+      toast("Ménage fait."); render();
+    });
+  };
   var sf = v.querySelector("#savefam");
   if(sf) sf.onclick = async function(){
     // Les valeurs sont relevées tout de suite : demander le code ouvre une
@@ -3583,6 +3990,8 @@ function wire(v){
   var lo = v.querySelector("#logout"); if(lo) lo.onclick = logout;
   var fd = v.querySelector("#fairedon"); if(fd) fd.onclick = function(){ ouvrirDon("reglages"); };
   var vd = v.querySelector("#voirdonnees"); if(vd) vd.onclick = pageDonnees;
+  var vm = v.querySelector("#voirmentions"); if(vm) vm.onclick = pageMentions;
+  var cm = v.querySelector("#chgmail"); if(cm) cm.onclick = function(){ changerAdresse(false); };
   var qf = v.querySelector("#quitterfam");   if(qf) qf.onclick = quitterLaFamille;
   var sf2 = v.querySelector("#suppfam");     if(sf2) sf2.onclick = supprimerLaFamille;
   var sc = v.querySelector("#suppcompte");   if(sc) sc.onclick = supprimerMonCompte;

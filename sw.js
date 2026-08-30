@@ -1,6 +1,6 @@
 /* Trophée Pernin — cache minimal : l'appli s'ouvre même sans réseau.
    Les données, elles, sont gérées par Firebase (cache hors ligne inclus). */
-const CACHE = "trophee-multi-v5";
+const CACHE = "trophee-multi-v6";
 const SHELL = [
   "./", "./index.html", "./config.js", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./icons/icon.svg",
