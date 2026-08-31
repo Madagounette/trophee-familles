@@ -1081,6 +1081,12 @@ function boot(){
   try{
     fb.app  = FBLIB.initializeApp(CFG);
     fb.auth = FBLIB.getAuth(fb.app);
+    /* Les messages de Firebase (confirmation d'adresse, mot de passe oublié)
+       partent dans la langue demandée ici. Sans cette ligne, ils arrivent en
+       anglais. Les modèles eux-mêmes ne sont pas modifiables sur ce projet :
+       la console répond « Il n'est actuellement pas possible de mettre à jour
+       les modèles d'e-mail de ce projet ». */
+    try{ fb.auth.languageCode = "fr"; }catch(e){}
     try{
       fb.db = FBLIB.initializeFirestore(fb.app, {
         localCache: FBLIB.persistentLocalCache({ tabManager: FBLIB.persistentMultipleTabManager() })
