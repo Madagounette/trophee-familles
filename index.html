@@ -132,6 +132,44 @@ button{cursor:pointer; border:none; background:none}
 .par{color:var(--ink-3)}
 
 .statusbar{display:flex; justify-content:center; padding:6px 0 40px}
+.majbtn{
+  display:inline-flex; align-items:center; gap:5px; font-family:var(--body); font-size:.76rem;
+  color:var(--ink-2); background:none; border:0; border-left:1px solid var(--line);
+  margin-left:4px; padding:0 0 0 10px; cursor:pointer; white-space:nowrap;
+}
+.majbtn:hover{color:var(--ink)}
+.majbtn[disabled]{opacity:.55; cursor:default}
+.majbtn .tourne{display:inline-block; animation:tourner .9s linear infinite}
+@keyframes tourner{to{transform:rotate(360deg)}}
+
+/* --- Le bilan du jour, une carte que l'on fait défiler --- */
+.jourbloc{margin:14px 0 4px; touch-action:pan-y}
+.jour-nav{display:flex; align-items:center; gap:10px; margin:0 0 8px}
+.jour-nav .jour-titre{flex:1; text-align:center; min-width:0}
+.jour-nav .jour-titre b{font-family:var(--display); font-size:1rem; display:block}
+.jour-fl{
+  flex:none; width:38px; height:38px; border-radius:50%; cursor:pointer;
+  background:var(--surface); border:1px solid var(--line); color:var(--ink);
+  font-size:1.15rem; line-height:1; display:grid; place-items:center;
+}
+.jour-fl:hover{border-color:var(--line-2)}
+.jour-fl[disabled]{opacity:.3; cursor:default}
+.jour-carte{
+  background:var(--surface-2); border:1px solid var(--line); border-radius:var(--r-m);
+  padding:14px 16px; min-height:96px;
+}
+.jour-solde{font-family:var(--display); font-size:1.6rem; line-height:1.1}
+.jour-solde.p{color:var(--pos)} .jour-solde.m{color:var(--dang)} .jour-solde.z{color:var(--ink-3)}
+.jour-lignes{list-style:none; margin:10px 0 0; padding:0; display:grid; gap:7px}
+.jour-lignes li{display:flex; gap:9px; align-items:baseline; font-size:.9rem}
+.jour-lignes b{font-family:var(--display); flex:none; width:26px}
+.jour-lignes .p b{color:var(--pos)} .jour-lignes .m b{color:var(--dang)}
+.jour-lignes .par{color:var(--ink-3); font-size:.8rem}
+.jour-rien{color:var(--ink-3); font-size:.9rem; margin:8px 0 0}
+.jour-pts{display:flex; justify-content:center; gap:6px; margin:10px 0 0}
+.jour-pts i{width:6px; height:6px; border-radius:50%; background:var(--line-2); display:block}
+.jour-pts i.on{background:var(--ink-3); transform:scale(1.35)}
+.jour-aide{font-size:.74rem; color:var(--ink-3); text-align:center; margin:8px 0 0}
 .status{
   display:flex; align-items:center; gap:8px; font-size:.76rem; color:var(--ink-3);
   white-space:nowrap; padding:7px 14px; border-radius:999px;
@@ -158,6 +196,7 @@ button{cursor:pointer; border:none; background:none}
 .graphbloc{margin:14px 0 4px}
 .graphsem{display:block; width:100%; height:auto; overflow:visible}
 .gs-grid{stroke:var(--line); stroke-width:1}
+.gs-grid.unite{stroke:var(--line); stroke-width:1; opacity:.45}
 .gs-zero{stroke:var(--line-2); stroke-width:1}
 .gs-axe{font-family:var(--body); font-size:11px; fill:var(--ink-3)}
 .gs-val{font-family:var(--mono); font-size:11px; font-weight:700; fill:var(--ink-2)}
@@ -607,7 +646,11 @@ button.chip.btnlike:hover{border-color:var(--brass); filter:brightness(1.03)}
 <main class="wrap" id="view"></main>
 
 <footer class="statusbar">
-  <div class="status" id="status" title="État de la sauvegarde"><i class="dot"></i><span>—</span></div>
+  <div class="status" id="status" title="État de la sauvegarde"><i class="dot"></i><span class="txt">—</span>
+    <button class="majbtn" id="maj" type="button" title="Relire les données du serveur et rafraîchir l'écran">
+      <span aria-hidden="true" id="maj-icone">&#8635;</span> Mettre à jour
+    </button>
+  </div>
 </footer>
 
 <footer class="signature">
@@ -2455,7 +2498,7 @@ function logout(){
 /* ====================== SAUVEGARDE ====================== */
 function setStatus(kind){
   var n = el("status"); if(!n) return;
-  var dot = n.querySelector(".dot"), txt = n.querySelector("span");
+  var dot = n.querySelector(".dot"), txt = n.querySelector(".txt");
   if(readOnly){ dot.className = "dot"; txt.textContent = "Mode lecture"; return; }
   dot.className = "dot" + (kind === "saving" ? " saving" : kind === "off" ? " off" : "");
   txt.textContent = kind === "saving" ? "Enregistrement…"
@@ -3205,8 +3248,20 @@ function joursDeLaSemaine(childId){
 
   var debut = new Date(S.weekStart), fin = new Date();
   debut.setHours(0,0,0,0); fin.setHours(0,0,0,0);
+
+  // Un point peut être antidaté : la fenêtre « Quand ? » laisse choisir un jour
+  // passé. S'il tombe avant le début de la semaine, il compte dans le score mais
+  // se retrouvait hors du graphique et du bilan du jour — donc invisible.
+  // On fait commencer la frise au plus ancien des deux.
+  evs.forEach(function(e){
+    var d = new Date(String(e.at).slice(0, 10) + "T12:00:00");
+    if(isNaN(d)) return;
+    d.setHours(0,0,0,0);
+    if(d < debut) debut = d;
+  });
+
   var jours = [], curseur = new Date(debut);
-  while(curseur <= fin && jours.length < 21){
+  while(curseur <= fin && jours.length < 31){
     jours.push({ cle: curseur.toISOString().slice(0,10), d: new Date(curseur), solde: 0, plus: 0, moins: 0 });
     curseur.setDate(curseur.getDate() + 1);
   }
@@ -3244,8 +3299,10 @@ function graphiqueSemaine(childId){
   jours.forEach(function(j){ toutes.push(j.solde, j.cumul); });
   var maxi = Math.max.apply(null, toutes.concat([1]));
   var mini = Math.min.apply(null, toutes.concat([-1]));
+  // Bornes entières : les repères tombent alors pile sur les points entiers,
+  // et une colonne se lit à la graduation près sans rien mesurer à l'œil.
   var marge = Math.max(1, Math.round((maxi - mini) * 0.15));
-  maxi += marge; mini -= marge;
+  maxi = Math.ceil(maxi + marge); mini = Math.floor(mini - marge);
 
   function y(v){ return mg.h + (maxi - v) / (maxi - mini) * ph; }
   var bande = pw / jours.length;
@@ -3255,14 +3312,21 @@ function graphiqueSemaine(childId){
   var s = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="graphsem" role="img" aria-label="' +
           esc("Points de la semaine, jour par jour et en cumul") + '">';
 
-  [maxi - marge, mini + marge].forEach(function(v){
-    if(Math.abs(v) < 0.5) return;
-    if(Math.abs(y(v) - y0) < 13) return;      // un repère trop près du zéro se marcherait dessus
-    s += '<line class="gs-grid" x1="' + mg.g + '" x2="' + (W - mg.d) + '" y1="' + y(v).toFixed(1) +
-         '" y2="' + y(v).toFixed(1) + '"/>' +
-         '<text class="gs-axe" x="' + (mg.g - 6) + '" y="' + (y(v) + 3.5).toFixed(1) +
+  // Un trait par point entier. Au-delà d'une quinzaine de graduations les
+  // chiffres se chevaucheraient : on garde tous les traits, on n'écrit qu'un
+  // nombre sur deux, puis sur cinq.
+  var nbGrad = maxi - mini + 1;
+  var pasNombre = nbGrad <= 15 ? 1 : nbGrad <= 30 ? 2 : 5;
+  for(var v = mini; v <= maxi; v++){
+    if(v === 0) continue;                      // la ligne du zéro est tracée à part
+    var yv = y(v);
+    s += '<line class="gs-grid unite" x1="' + mg.g + '" x2="' + (W - mg.d) + '" y1="' + yv.toFixed(1) +
+         '" y2="' + yv.toFixed(1) + '"/>';
+    if(v % pasNombre) continue;
+    if(Math.abs(yv - y0) < 11) continue;       // un nombre collé au zéro se marcherait dessus
+    s += '<text class="gs-axe" x="' + (mg.g - 6) + '" y="' + (yv + 3.5).toFixed(1) +
          '" text-anchor="end">' + (v > 0 ? "+" : "") + v + "</text>";
-  });
+  }
 
   s += '<line class="gs-zero" x1="' + mg.g + '" x2="' + (W - mg.d) + '" y1="' + y0.toFixed(1) +
        '" y2="' + y0.toFixed(1) + '"/>' +
@@ -3326,6 +3390,113 @@ function graphiqueSemaine(childId){
     "</div></div>";
 }
 
+/* ====================== LE BILAN DU JOUR ======================
+   Une carte par journée, que l'on fait défiler : vers la gauche pour avancer
+   dans la semaine, vers la droite pour revenir en arrière. Pendant la réunion,
+   on relit la semaine jour après jour au lieu d'une longue liste. */
+var jourVu = {};   // pour chaque enfant, l'index du jour affiché
+
+function jourIndex(childId, jours){
+  var i = jourVu[childId];
+  if(typeof i !== "number" || i < 0 || i >= jours.length) i = jours.length - 1;   // aujourd'hui par défaut
+  return i;
+}
+
+function lignesDuJour(childId, cle){
+  return eventsOfWeek(S.weekStart, childId)
+    .filter(function(e){ return String(e.at).slice(0, 10) === cle; })
+    .slice().reverse();                                  // les plus anciennes en haut
+}
+
+function contenuJour(childId, jours, i){
+  var j = jours[i];
+  var lignes = lignesDuJour(childId, j.cle);
+  var cls = j.solde > 0 ? "p" : j.solde < 0 ? "m" : "z";
+  var mot = Math.abs(j.solde) > 1 ? "points" : "point";
+
+  var h = '<div class="jour-nav">' +
+    '<button class="jour-fl" type="button" data-jour="prec"' + (i === 0 ? " disabled" : "") +
+      ' aria-label="Jour précédent">&#8249;</button>' +
+    '<div class="jour-titre"><div class="eyebrow">Bilan du jour</div><b>' +
+      esc(JOURS[j.d.getDay()] + " " + fDate(j.cle)) + "</b></div>" +
+    '<button class="jour-fl" type="button" data-jour="suiv"' + (i === jours.length - 1 ? " disabled" : "") +
+      ' aria-label="Jour suivant">&#8250;</button>' +
+    "</div>";
+
+  h += '<div class="jour-carte">' +
+       '<div class="jour-solde ' + cls + '">' + (j.solde > 0 ? "+" : "") + j.solde + " " + mot + "</div>";
+  if(!lignes.length){
+    h += '<p class="jour-rien">Rien ce jour-là.</p>';
+  } else {
+    h += '<ul class="jour-lignes">';
+    lignes.forEach(function(e){
+      var d = new Date(e.at);
+      var heure = isNaN(d) ? "" : pad(d.getHours()) + "h" + pad(d.getMinutes());
+      h += '<li class="' + (e.delta > 0 ? "p" : "m") + '"><b>' + (e.delta > 0 ? "+1" : "&#8722;1") + "</b>" +
+           "<span>" + esc(e.note) +
+           (heure ? ' <span class="par">' + heure + "</span>" : "") +
+           (e.by ? ' <span class="par">· ' + esc(whoName(e.by)) + "</span>" : "") +
+           "</span></li>";
+    });
+    h += "</ul>";
+  }
+  h += "</div>";
+
+  h += '<div class="jour-pts" aria-hidden="true">' +
+       jours.map(function(_, k){ return '<i class="' + (k === i ? "on" : "") + '"></i>'; }).join("") + "</div>";
+  h += '<p class="jour-aide">Glisse vers la gauche pour le jour suivant, vers la droite pour le précédent.</p>';
+  return h;
+}
+
+function blocJour(childId){
+  var jours = joursDeLaSemaine(childId);
+  if(!jours) return '<div class="empty">Aucun mouvement cette semaine.</div>';
+  return '<div class="jourbloc" data-jourbloc="' + esc(childId) + '" tabindex="0">' +
+         contenuJour(childId, jours, jourIndex(childId, jours)) + "</div>";
+}
+
+function deplacerJour(bloc, childId, pas){
+  var jours = joursDeLaSemaine(childId);
+  if(!jours) return;
+  var i = jourIndex(childId, jours) + pas;
+  if(i < 0 || i >= jours.length) return;
+  jourVu[childId] = i;
+  bloc.innerHTML = contenuJour(childId, jours, i);
+  brancherFlechesJour(bloc, childId);
+}
+
+function brancherFlechesJour(bloc, childId){
+  bloc.querySelectorAll("[data-jour]").forEach(function(b){
+    b.onclick = function(){ deplacerJour(bloc, childId, b.getAttribute("data-jour") === "suiv" ? 1 : -1); };
+  });
+}
+
+function brancherJourbloc(bloc){
+  var childId = bloc.getAttribute("data-jourbloc");
+  brancherFlechesJour(bloc, childId);
+
+  var x0 = null, y0 = null;
+  bloc.addEventListener("touchstart", function(e){
+    if(e.touches.length !== 1){ x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+  }, { passive:true });
+  bloc.addEventListener("touchend", function(e){
+    if(x0 === null) return;
+    var t = e.changedTouches[0];
+    var dx = t.clientX - x0, dy = t.clientY - y0;
+    x0 = null;
+    // Un geste presque vertical, c'est la page que l'on fait défiler : on ne
+    // change pas de jour pour autant.
+    if(Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
+    deplacerJour(bloc, childId, dx < 0 ? 1 : -1);
+  }, { passive:true });
+
+  bloc.onkeydown = function(e){
+    if(e.key === "ArrowRight"){ e.preventDefault(); deplacerJour(bloc, childId, 1); }
+    else if(e.key === "ArrowLeft"){ e.preventDefault(); deplacerJour(bloc, childId, -1); }
+  };
+}
+
 function viewMeeting(){
 
   var d = ensureDraft();
@@ -3343,7 +3514,6 @@ function viewMeeting(){
     var ax = axeOf(c.id);
     var tot = totalCompte(n, ch.axisDone === true);
     var v = verdictLabel(n);
-    var list = eventsOfWeek(S.weekStart, c.id).slice().reverse();
     var zcls = zoneOf(n) === "good" ? "z-good" : zoneOf(n) === "warn" ? "z-warn" : zoneOf(n) === "bad" ? "z-bad" : "";
     h += '<section class="meet-child ' + laneOf(c.id) + '">';
     h += '<div class="meet-head"><div class="avatar">' + esc(c.name.charAt(0)) + "</div>" +
@@ -3354,18 +3524,7 @@ function viewMeeting(){
 
     h += graphiqueSemaine(c.id);
 
-    if(!list.length){
-      h += '<div class="empty">Aucun mouvement cette semaine.</div>';
-    } else {
-      h += '<ol class="timeline" style="list-style:none">';
-      list.forEach(function(e){
-        h += '<li class="tl ' + (e.delta > 0 ? "p" : "m") + '">' +
-             '<div class="when">' + fWhen(e.at) + "</div>" +
-             "<b>" + (e.delta > 0 ? "+1" : "−1") + "</b> — " + esc(e.note) +
-             (e.by ? ' <span class="par">par ' + esc(whoName(e.by)) + "</span>" : "") + "</li>";
-      });
-      h += "</ol>";
-    }
+    h += blocJour(c.id);
 
     if(!readOnly){
       h += '<div class="choicebox"><div class="eyebrow">Axe d\'amélioration</div>';
@@ -3799,6 +3958,59 @@ function relancerApresSaisie(){
   setTimeout(function(){ if(S) render(); }, 80);
 }
 
+/* ====================== METTRE À JOUR ======================
+   L'écran se rafraîchit tout seul quand le serveur envoie quelque chose. Trois
+   cas y échappent pourtant :
+     — un champ a le focus, et le rendu est mis en attente pour ne pas effacer
+       ce qui est en train d'être tapé ;
+     — l'application était en arrière-plan, écoutes en sommeil ;
+     — une modification est partie d'un autre appareil pendant une coupure.
+   D'où ce bouton, qui redemande tout au serveur et redessine sans condition. */
+var derniereMaj = 0;
+var majEnCours  = false;
+
+function forcerRendu(){
+  // On lève la mise en attente du rendu, quitte à quitter le champ en cours.
+  if(renduDiffere){
+    document.removeEventListener("focusout", relancerApresSaisie);
+    renduDiffere = false;
+  }
+  var a = document.activeElement;
+  if(a && a.blur && a !== document.body){ try{ a.blur(); }catch(e){} }
+  render();
+}
+
+function mettreAJour(silencieux){
+  if(majEnCours) return;
+  majEnCours = true;
+  derniereMaj = Date.now();
+
+  var b = el("maj"), ico = el("maj-icone");
+  if(b && !silencieux){ b.disabled = true; }
+  if(ico && !silencieux){ ico.className = "tourne"; }
+
+  // Couper puis rétablir les écoutes force une relecture complète côté serveur.
+  var relance = false;
+  if(fb.user && fb.base && CFG && !estEssai()){
+    try{ stopSync(); startSync(); relance = true; }catch(e){}
+  }
+
+  setTimeout(function(){
+    forcerRendu();
+    majEnCours = false;
+    if(b){ b.disabled = false; }
+    if(ico){ ico.className = ""; }
+    if(!silencieux){
+      toast(relance ? "À jour — " + fHeure(new Date()) : "Écran rafraîchi");
+    }
+  }, relance ? 900 : 120);
+}
+
+function fHeure(d){
+  var h = d.getHours(), m = d.getMinutes();
+  return (h < 10 ? "0" : "") + h + " h " + (m < 10 ? "0" : "") + m;
+}
+
 function render(){
   poserTitre();
   var bd = el("don-bande");
@@ -3889,6 +4101,7 @@ function wire(v){
       touch();
     };
   });
+  v.querySelectorAll("[data-jourbloc]").forEach(brancherJourbloc);
   v.querySelectorAll("[data-nextaxe]").forEach(function(i){
     i.onchange = function(){ ensureDraft().choices[i.getAttribute("data-nextaxe")].nextAxis = i.value; persistLocal(); queueSave(); };
   });
@@ -4163,6 +4376,16 @@ function startApp(){
   catch(e){
     el("view").innerHTML = '<div class="panel"><div class="empty">Une erreur est survenue au chargement : ' + esc(e && e.message) + "</div></div>";
   }
+  var b = el("maj");
+  if(b) b.onclick = function(){ mettreAJour(false); };
+
+  // Au retour de l'arrière-plan, l'écran peut dater : une application rangée
+  // depuis un moment n'a rien reçu entre-temps. On redemande tout, sans le dire.
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState !== "visible") return;
+    if(Date.now() - derniereMaj < 20000) return;
+    mettreAJour(true);
+  });
 }
 if(window.FBLIB) startApp();
 else{
