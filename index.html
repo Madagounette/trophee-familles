@@ -15,7 +15,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Karla:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Serif+Display&family=Karla:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
 <style>
 /* ============================ TOKENS ============================ */
 :root{
@@ -216,8 +216,38 @@ button{cursor:pointer; border:none; background:none}
 /* --- signature de pied de page --- */
 .signature{text-align:center; padding:26px 18px 34px; border-top:1px solid var(--line);
            margin-top:10px; background:var(--surface-2)}
-.signature img{width:132px; height:auto; opacity:.94}
-.signature .amour{font-size:.85rem; color:var(--ink-3); margin:6px 0 0}
+.signature .amour{font-size:.85rem; color:var(--ink-3); margin:0}
+.signature .piedliens{margin:14px 0 0; font-size:.78rem}
+/* Dans le pied de page, le lien reste sobre : la signature ne doit pas crier. */
+.signature .piedliens .lien{color:var(--ink-2); font-weight:600}
+.signature .piedliens .lien:hover{color:var(--ink)}
+
+/* --- Signature de l'auteur du site. Les couleurs du badge sont celles de la
+   marque : elles ne suivent pas le thème clair ou sombre de l'application. --- */
+.cp-sign{
+  display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;
+  max-width:420px; margin:20px auto 0; padding:18px 12px 0;
+  border-top:1px solid var(--line);
+}
+.cp-texte{font-size:.74rem; color:var(--ink-3); letter-spacing:.01em}
+.cp-badge{
+  display:inline-flex; flex-direction:column; align-items:center; gap:3px;
+  padding:8px 13px 7px; line-height:1; text-decoration:none;
+  background:#011126; border:1px solid #2A3550; border-radius:6px;
+  transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+}
+.cp-mono{font-family:"DM Serif Display",Georgia,"Times New Roman",serif; font-size:1.2rem; letter-spacing:.02em}
+.cp-mono .c{color:#FFFFFF}
+.cp-mono .p{color:#B8957C}
+.cp-nom{
+  font-family:"Karla","Segoe UI",system-ui,sans-serif; font-size:.5rem; font-weight:600;
+  text-transform:uppercase; letter-spacing:.18em; color:#FFFFFF; white-space:nowrap;
+}
+.cp-badge:hover, .cp-badge:focus-visible{
+  transform:translateY(-2px); border-color:#B8957C;
+  box-shadow:0 5px 14px -7px rgba(1,17,38,.6);
+}
+@media (prefers-reduced-motion: reduce){ .cp-badge{transition:none} .cp-badge:hover{transform:none} }
 .don-bande{display:inline-flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap;
            background:var(--surface); border:1px solid var(--line); color:var(--ink-2);
            border-radius:var(--r-m); padding:10px 16px; margin:16px auto 0; font-size:.87rem;
@@ -654,12 +684,17 @@ button.chip.btnlike:hover{border-color:var(--brass); filter:brightness(1.03)}
 </footer>
 
 <footer class="signature">
-  <picture>
-    <source srcset="icons/madag-sombre.png" media="(prefers-color-scheme: dark)">
-    <img src="icons/madag.png" alt="Madag Corporation" width="112" height="112">
-  </picture>
   <p class="amour">Fait avec amour. <span aria-hidden="true">❤️</span></p>
   <div id="don-bande"></div>
+  <p class="piedliens"><button type="button" class="lien" id="pied-mentions">Mentions légales</button></p>
+  <div class="cp-sign">
+    <span class="cp-texte">Site créé et réalisé par</span>
+    <a class="cp-badge" href="https://madag.fr" target="_blank" rel="noopener"
+       aria-label="Clément Pernin — madag.fr, nouvelle fenêtre">
+      <span class="cp-mono" aria-hidden="true"><span class="c">C</span><span class="p">P</span></span>
+      <span class="cp-nom">Clément Pernin</span>
+    </a>
+  </div>
 </footer>
 </div>
 
@@ -4378,6 +4413,8 @@ function startApp(){
   }
   var b = el("maj");
   if(b) b.onclick = function(){ mettreAJour(false); };
+  var ml = el("pied-mentions");
+  if(ml) ml.onclick = pageMentions;
 
   // Au retour de l'arrière-plan, l'écran peut dater : une application rangée
   // depuis un moment n'a rien reçu entre-temps. On redemande tout, sans le dire.
